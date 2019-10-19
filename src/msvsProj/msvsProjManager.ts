@@ -1,8 +1,10 @@
+import * as vscode from 'vscode';
 import * as fs from "fs";
 import * as vsParse from "vs-parse";
+import { ProjNode } from './ProjNode';
+
 export default class MsvsProjManager{
 	public constructor(){
-		console.log("hello msvsProjManager");
 	}
 	public listupSlnFiles(rootFolderPath:string):string[] {
 		let fileList = this.listupFiles(rootFolderPath, /.*\.sln$/);
@@ -27,13 +29,18 @@ export default class MsvsProjManager{
 		return tarFileList;
 	}
 
-	public readSlnFile(slnFilePath:string):string[] {
+	public readSlnFile(slnFilePath:string):ProjNode[] {
 		let solutionData:any = vsParse.parseSolutionSync(slnFilePath);
 
-		let projectsInSlnFile:string[]= [];
+		let projectsInSlnFile:ProjNode[]= [];
 		for(let p of solutionData.projects){
-			console.log(p.relativePath);
-			projectsInSlnFile.push(p.relativePath);
+			console.log(p);
+			let newProjNode:ProjNode = new ProjNode(
+				p.relativePath,
+				p.relativePath,
+				vscode.TreeItemCollapsibleState.Collapsed
+			);
+			projectsInSlnFile.push(newProjNode);
 		}
 
 		return projectsInSlnFile;
