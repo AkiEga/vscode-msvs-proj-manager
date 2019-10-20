@@ -10,13 +10,13 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.listup-msvs-proj"
+		"onCommand:vscode-msvs-proj-manager.listup-msvs-proj"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.listup-msvs-proj",
+				"command": "vscode-msvs-proj-manager.listup-msvs-proj",
 				"title": "List up msvs projs"
 			}
 		],
