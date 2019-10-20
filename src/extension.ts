@@ -3,6 +3,8 @@
 import * as vscode from 'vscode';
 import MsvsProjManager from './msvsProj/msvsProjManager';
 import MsvsProjProvider from './msvsProj/MsvsProjProvider';
+import { ProjNode } from './msvsProj/ProjNode';
+import * as path from 'path';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -17,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-msvs-proj-manager.listup-msvs-proj', async () => {
+	vscode.commands.registerCommand('vscode-msvs-proj-manager.listup-msvs-proj', async () => {
 		// The code you place here will be executed every time your command is executed
 		if(vscode.workspace.workspaceFolders){
 			let workspaceFolder = vscode.workspace.workspaceFolders[0].uri.fsPath.toString();
@@ -29,12 +31,18 @@ export function activate(context: vscode.ExtensionContext) {
 				let ret = mpm.readSlnFile(selectedSlnFile);
 
 				let mpp = new MsvsProjProvider(mpm, selectedSlnFile);
-				vscode.window.createTreeView("sln",{ treeDataProvider: mpp});					
+				vscode.window.createTreeView("slnExplorer",{ treeDataProvider: mpp});					
 			}
 		}
 	});
+	vscode.commands.registerCommand('vscode-msvs-proj-manager.build-msvs-proj', async (projNode:ProjNode) => {
+		// The code you place here will be executed every time your command is executed
+		if(projNode){
+			console.log("build proj: "+projNode.label);
+		}
+	});
 
-	context.subscriptions.push(disposable);
+	// context.subscriptions.push(disposable);
 }
 
 // this method is called when your extension is deactivated

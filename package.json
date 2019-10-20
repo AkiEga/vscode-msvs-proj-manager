@@ -18,14 +18,26 @@
 			{
 				"command": "vscode-msvs-proj-manager.listup-msvs-proj",
 				"title": "List up msvs projs"
+			},
+			{
+				"command": "vscode-msvs-proj-manager.build-msvs-proj",
+				"title": "build msvs projs"
 			}
 		],
 		"views": {
 			"explorer": [
 			  {
-				"id": "sln",
+				"id": "slnExplorer",
 				"name": "sln explorer"
 			  }
+			]
+		},
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "vscode-msvs-proj-manager.build-msvs-proj",
+					"when": "view == slnExplorer"
+				}
 			]
 		}
 	},
