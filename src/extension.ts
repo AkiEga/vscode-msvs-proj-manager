@@ -1,44 +1,75 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import MsvsProjManager from './msvsProj/msvsProjManager';
 import MsvsProjProvider from './msvsProj/MsvsProjProvider';
-import { ProjNode } from './msvsProj/ProjNode';
+import { MsvsProjNode } from './msvsProj/MsvsProjNode';
+import * as fs from 'fs';
 import * as path from 'path';
+
+function readdirRecursively(dir: string, files = []): any {
+	const paths: string[] = fs.readdirSync(dir);
+	const dirs = [];
+	for (const path of paths) {
+		const stats = fs.statSync(`${dir}/${path}`);
+		let fullPath = `${dir}/${path}`.replace(/\\/g, "/");
+		if (stats.isDirectory()) {
+			dirs.push(fullPath);
+		}
+		else {
+			files.push(fullPath);
+		}
+	}
+	for (const d of dirs) {
+		files = readdirRecursively(d, files);
+	}
+	return files;
+}
+function listupFiles(rootFolderPath: string, pattern: RegExp): string[] {
+	let srcFileList: string[] = [];
+	let tarFileList: string[] = [];
+	readdirRecursively(rootFolderPath, srcFileList);
+	for (let file of srcFileList) {
+		if (pattern.test(file) === true) {
+			tarFileList.push(file);
+		}
+	}
+	return tarFileList;
+}
+
+
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "vscode-msvs-proj-manager" is now active!');
 
-	// create Msvs Project manager
-	let mpm = new MsvsProjManager();
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	vscode.commands.registerCommand('vscode-msvs-proj-manager.listup-msvs-proj', async () => {
-		// The code you place here will be executed every time your command is executed
+	vscode.commands.registerCommand('vscode-msvs-proj-manager.read-sln-file', async () => {
 		if(vscode.workspace.workspaceFolders){
 			let workspaceFolder = vscode.workspace.workspaceFolders[0].uri.fsPath.toString();
-			let slnFiles:string[] = await mpm.listupSlnFiles(workspaceFolder);
-			let selectedSlnFile = await vscode.window.showQuickPick(slnFiles);
+			let slnFiles:string[] = await listupFiles(workspaceFolder, /.*\.sln$/);
 
-			console.log(selectedSlnFile);
+			let selectedSlnFile;
+			if(slnFiles.length === 1){
+				selectedSlnFile = slnFiles[0];
+			}else if(slnFiles.length >= 2){
+				selectedSlnFile = await vscode.window.showQuickPick(slnFiles);
+			}else{
+				return;
+			}
 			if(typeof(selectedSlnFile) !== undefined){
-				let ret = mpm.readSlnFile(selectedSlnFile);
-
-				let mpp = new MsvsProjProvider(mpm, selectedSlnFile);
+				let mpp = new MsvsProjProvider(selectedSlnFile);
 				vscode.window.createTreeView("slnExplorer",{ treeDataProvider: mpp});					
 			}
 		}
 	});
-	vscode.commands.registerCommand('vscode-msvs-proj-manager.build-msvs-proj', async (projNode:ProjNode) => {
+	vscode.commands.registerCommand('vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj', async (projNode:MsvsProjNode) => {
 		// The code you place here will be executed every time your command is executed
 		if(projNode){
-			console.log("build proj: "+projNode.label);
+			console.log("msvs proj: "+projNode.path);
+			let dir = projNode.getProjDir();
+			console.log("msvs proj: "+ dir);
+
+			vscode.window.createTerminal({cwd: dir}).show();
 		}
 	});
 

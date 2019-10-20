@@ -10,17 +10,17 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscode-msvs-proj-manager.listup-msvs-proj"
+		"onCommand:vscode-msvs-proj-manager.read-sln-file"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "vscode-msvs-proj-manager.listup-msvs-proj",
+				"command": "vscode-msvs-proj-manager.read-sln-file",
 				"title": "List up msvs projs"
 			},
 			{
-				"command": "vscode-msvs-proj-manager.build-msvs-proj",
+				"command": "vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj",
 				"title": "build msvs projs"
 			}
 		],
@@ -35,7 +35,7 @@
 		"menus": {
 			"view/item/context": [
 				{
-					"command": "vscode-msvs-proj-manager.build-msvs-proj",
+					"command": "vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj",
 					"when": "view == slnExplorer"
 				}
 			]
