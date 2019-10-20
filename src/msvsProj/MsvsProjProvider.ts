@@ -7,12 +7,12 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 	private rootDirPath:string;
-	private projectsInSlnFile:MsvsProjNode[];
+	private msvsProjNodes:MsvsProjNode[];
 
 	constructor(private readonly tarSlnFilePath:string) { 
 		this.rootDirPath = path.dirname(tarSlnFilePath);
 		let solutionData:any = vsParse.parseSolutionSync(tarSlnFilePath);
-		this.projectsInSlnFile = [];
+		this.msvsProjNodes = [];
 		for(let p of solutionData.projects){
 			let msvsProjFullPath:string = path.join(this.rootDirPath, p.relativePath);
 			let newProjNode:MsvsProjNode = new MsvsProjNode(
@@ -20,7 +20,7 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 				msvsProjFullPath,
 				vscode.TreeItemCollapsibleState.Collapsed
 			);
-			this.projectsInSlnFile.push(newProjNode);
+			this.msvsProjNodes.push(newProjNode);
 		}
 	}
 
@@ -37,10 +37,10 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 		//let currentPathPos = path.join(this.rootDirPath, element.path);
 		if(element){
 			if(path.dirname(element.path) === this.rootDirPath){
-				ret = this.projectsInSlnFile;
+				ret = this.msvsProjNodes;
 			}
 		}else{
-			ret = this.projectsInSlnFile;
+			ret = this.msvsProjNodes;
 		}
 		return ret;
 	}
