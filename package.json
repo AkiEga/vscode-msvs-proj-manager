@@ -10,18 +10,18 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscode-msvs-proj-manager.read-sln-file"
+		"onView:slnExplorer"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "vscode-msvs-proj-manager.read-sln-file",
-				"title": "List up msvs projs"
+				"title": "read sln file"
 			},
 			{
 				"command": "vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj",
-				"title": "build msvs projs"
+				"title": "open terminal nearby msvs proj"
 			}
 		],
 		"views": {

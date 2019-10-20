@@ -4,8 +4,10 @@ import * as vscode from 'vscode';
 import MsvsProjProvider from './msvsProj/MsvsProjProvider';
 import { MsvsProjNode } from './msvsProj/MsvsProjNode';
 import * as fs from 'fs';
-import * as path from 'path';
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// For utility
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function readdirRecursively(dir: string, files = []): any {
 	const paths: string[] = fs.readdirSync(dir);
 	const dirs = [];
@@ -35,45 +37,56 @@ function listupFiles(rootFolderPath: string, pattern: RegExp): string[] {
 	}
 	return tarFileList;
 }
+function listupSlnFile():string[]{
+	if (vscode.workspace.workspaceFolders) {
+		let workspaceFolder = vscode.workspace.workspaceFolders[0].uri.fsPath.toString();
+		let slnFiles: string[] = listupFiles(workspaceFolder, /.*\.sln$/);
+		return slnFiles;
+	}else{
+		return [];
+	}
+}
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// For extension command
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+function openTerminalNearbyMsvsProj(): (...args: any[]) => any {
+	return async (projNode: MsvsProjNode) => {
+		// The code you place here will be executed every time your command is executed
+		if (projNode) {
+			let dir = projNode.getProjDir();
+			vscode.window.createTerminal({ cwd: dir }).show();
+		}
+	};
+}
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// For extension events
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "vscode-msvs-proj-manager" is now active!');
+	const slnFilePath:string = vscode.workspace.getConfiguration('vscode-msvs-proj-manager').get<string>('default-sln-file-path');
+	let mpp = new MsvsProjProvider(slnFilePath);
+	vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 
 	vscode.commands.registerCommand('vscode-msvs-proj-manager.read-sln-file', async () => {
-		if(vscode.workspace.workspaceFolders){
-			let workspaceFolder = vscode.workspace.workspaceFolders[0].uri.fsPath.toString();
-			let slnFiles:string[] = await listupFiles(workspaceFolder, /.*\.sln$/);
-
-			let selectedSlnFile;
-			if(slnFiles.length === 1){
+		if (vscode.workspace.workspaceFolders) {
+			let slnFiles:string[] = listupSlnFile();
+			let selectedSlnFile = "";
+			if (slnFiles.length === 1) {
 				selectedSlnFile = slnFiles[0];
-			}else if(slnFiles.length >= 2){
+			} else if (slnFiles.length >= 2) {
 				selectedSlnFile = await vscode.window.showQuickPick(slnFiles);
-			}else{
+			} else {
 				return;
 			}
-			if(typeof(selectedSlnFile) !== undefined){
+			if (typeof (selectedSlnFile) !== undefined) {
 				let mpp = new MsvsProjProvider(selectedSlnFile);
-				vscode.window.createTreeView("slnExplorer",{ treeDataProvider: mpp});					
+				vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 			}
 		}
 	});
-	vscode.commands.registerCommand('vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj', async (projNode:MsvsProjNode) => {
-		// The code you place here will be executed every time your command is executed
-		if(projNode){
-			console.log("msvs proj: "+projNode.path);
-			let dir = projNode.getProjDir();
-			console.log("msvs proj: "+ dir);
-
-			vscode.window.createTerminal({cwd: dir}).show();
-		}
-	});
-
-	// context.subscriptions.push(disposable);
+	vscode.commands.registerCommand('vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj', openTerminalNearbyMsvsProj());
 }
 
 // this method is called when your extension is deactivated
