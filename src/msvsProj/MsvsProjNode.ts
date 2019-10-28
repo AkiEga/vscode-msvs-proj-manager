@@ -8,12 +8,11 @@ export class MsvsProjNode extends vscode.TreeItem {
 	public children:MsvsProjNode[];
 
 	constructor(_relativePath:string, _rootDirPath:string){
-		let label:string = _relativePath.split("\\")[0];
+		let label:string = _relativePath.split("\\").pop();
 		super(label, vscode.TreeItemCollapsibleState.Collapsed);
 		this.relativePath = _relativePath;
 		this.rootDirPath = _rootDirPath;
 		this.children = [];
-		console.log(this.label + " is created.\n");
 	}
 	get description(): string {
 		return this.label;
@@ -23,15 +22,15 @@ export class MsvsProjNode extends vscode.TreeItem {
 	}
 	public getBuildSettings(){
 		let p = vsParse.parseProjectSync(this.fullPath);
-		console.log(p);
 	}
 	public getProjDir(){
 		return path.dirname(this.fullPath);
 	}
-	public addChild(childRelativePath:string, childRootDirPath:string):void{
+	public addChild(childRelativePath:string,fullDepthPath:string):void{
+		// add current children nodes
 		let newProjNode:MsvsProjNode = new MsvsProjNode(
 			childRelativePath,
-			childRootDirPath			
+			this.rootDirPath			
 		);
 		if(newProjNode.label === ""){
 			return;
@@ -41,17 +40,15 @@ export class MsvsProjNode extends vscode.TreeItem {
 				return;
 			}
 		}
-
-		console.log(newProjNode.label + " is created.\n");
 		this.children.push(newProjNode);
-		
-		let childNodePath:string = '';
-		let dirs:string[] = childRelativePath.split('\\');
-		for(let i=1;i<dirs.length;i++){
-			if(dirs[i]){
-				childNodePath += '/' + dirs[i];
-			}
+
+		// create next children nodes
+		let pathDiff:string = fullDepthPath.replace(childRelativePath,"");
+		if(pathDiff === ""){
+			return;
 		}
-		newProjNode.addChild(childNodePath, childRootDirPath);
+		let nextRootPath:string = path.join(childRelativePath,pathDiff.split("\\")[1]);		
+
+		newProjNode.addChild(nextRootPath, fullDepthPath);
 	}
 }

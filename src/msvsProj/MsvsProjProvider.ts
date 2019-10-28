@@ -14,7 +14,8 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 		let solutionData:any = vsParse.parseSolutionSync(tarSlnFilePath);
 		this.msvsProjRootNode = new MsvsProjNode(".", this.rootDirPath);
 		for(let p of solutionData.projects){
-			this.msvsProjRootNode.addChild(p.relativePath,this.rootDirPath);
+			let topDir:string = p.relativePath.split("\\")[0];
+			this.msvsProjRootNode.addChild(topDir, p.relativePath);
 		}	
 	}
 	public refresh(): any {
