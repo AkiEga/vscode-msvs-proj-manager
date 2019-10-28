@@ -27,28 +27,51 @@ export class MsvsProjNode extends vscode.TreeItem {
 		return path.dirname(this.fullPath);
 	}
 	public addChild(childRelativePath:string,fullDepthPath:string):void{
-		// add current children nodes
+		// add current children nodes		
+		let newProjNode:MsvsProjNode = this.CreateNodeAndAddChild(childRelativePath);
+		
+		// create next children nodes
+		if(newProjNode){			
+			let nextChildNodePath = this.GenNextChildNodePath(
+				childRelativePath, fullDepthPath);
+			newProjNode.addChild(nextChildNodePath, fullDepthPath);
+		}
+	}
+
+	private CreateNodeAndAddChild(childRelativePath:string):MsvsProjNode{
+		if(childRelativePath=== undefined){
+			return null;
+		}
 		let newProjNode:MsvsProjNode = new MsvsProjNode(
 			childRelativePath,
 			this.rootDirPath			
 		);
+
+		let isAddChild:Boolean = true;
 		if(newProjNode.label === ""){
-			return;
+			isAddChild = false;
 		}
 		for(let c of this.children){
 			if(c.label === newProjNode.label){
-				return;
+				isAddChild = false;
 			}
 		}
-		this.children.push(newProjNode);
 
-		// create next children nodes
+		if(isAddChild === true){
+			this.children.push(newProjNode);
+		}
+
+		return newProjNode;
+	}
+
+	private GenNextChildNodePath(childRelativePath:string, fullDepthPath:string):string{
+		let nextChildNodePath:string = "";
 		let pathDiff:string = fullDepthPath.replace(childRelativePath,"");
 		if(pathDiff === ""){
 			return;
 		}
-		let nextRootPath:string = path.join(childRelativePath,pathDiff.split("\\")[1]);		
+		nextChildNodePath = path.join(childRelativePath,pathDiff.split("\\")[1]);		
 
-		newProjNode.addChild(nextRootPath, fullDepthPath);
+		return nextChildNodePath;
 	}
 }

@@ -1,8 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import MsvsProjProvider from './msvsProj/MsvsProjProvider';
-import { MsvsProjNode } from './msvsProj/MsvsProjNode';
+import MsvsProjProvider from './msvs/MsvsProjProvider';
+import { MsvsProjNode } from './msvs/MsvsProjNode';
 import * as fs from 'fs';
 import * as childProccess from 'child_process';
 import * as Encoding from 'encoding-japanese';
