@@ -26,14 +26,18 @@
 			{
 				"command": "vscode-msvs-proj-manager.build-msvs-proj",
 				"title": "build msvs proj"
+			},
+			{
+				"command": "vscode-msvs-proj-manager.clean-msvs-proj",
+				"title": "clean msvs proj"
 			}
 		],
 		"views": {
 			"explorer": [
-			  {
-				"id": "slnExplorer",
-				"name": "sln explorer"
-			  }
+				{
+					"id": "slnExplorer",
+					"name": "sln explorer"
+				}
 			]
 		},
 		"menus": {
@@ -44,6 +48,10 @@
 				},
 				{
 					"command": "vscode-msvs-proj-manager.build-msvs-proj",
+					"when": "view == slnExplorer"
+				},
+				{
+					"command": "vscode-msvs-proj-manager.clean-msvs-proj",
 					"when": "view == slnExplorer"
 				}
 			]
@@ -68,6 +76,7 @@
 		"vscode-test": "^1.0.2"
 	},
 	"dependencies": {
+		"encoding-japanese": "^1.0.30",
 		"vs-parse": "^1.2.2"
 	}
 }

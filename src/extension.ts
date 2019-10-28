@@ -5,6 +5,7 @@ import MsvsProjProvider from './msvsProj/MsvsProjProvider';
 import { MsvsProjNode } from './msvsProj/MsvsProjNode';
 import * as fs from 'fs';
 import * as childProccess from 'child_process';
+import * as Encoding from 'encoding-japanese';
 
 ///////////////////////////////////////////////////////////////////////////////
 // For utility
@@ -60,22 +61,37 @@ function openTerminalNearbyMsvsProj(): (...args: any[]) => any {
 		}
 	};
 }
+function exeMsBuild(msbuildPath:string, target:string, projPath:string){
+	let msbuildCmdStr:string = `"${msbuildPath}" /t:${target} ${projPath}`;
+	let exeOption:object = {encoding: 'Shift_JIS'};
+	childProccess.exec(msbuildCmdStr, exeOption,
+		(error,stdout,stderr)=>{
+	
+		let retUTF8:string	= Encoding.convert(stdout, {
+			from: 'SJIS',
+			to: 'UNICODE',
+			type: 'string',
+		});
+		
+		console.log(retUTF8);
+	});
+
+	return;
+}
 
 function buildMsvsProj(msbuildPath:string): (...args: any[]) => any {
 	return async (projNode: MsvsProjNode) => {
 		// The code you place here will be executed every time your command is executed
 		if (projNode) {
-			childProccess.exec(`"${msbuildPath}" /t:Build ${projNode.fullPath}`, (error, stdout, stderr) => {
-				if(error) {
-				  // エラー時は標準エラー出力を表示して終了
-				  console.log(stderr);
-				  return;
-				}
-				else {
-				  // 成功時は標準出力を表示して終了
-				  console.log(stdout);
-				}
-			  });
+			exeMsBuild(msbuildPath,"Build",projNode.fullPath);
+		}
+	};
+}
+function cleanMsvsProj(msbuildPath:string): (...args: any[]) => any {
+	return async (projNode: MsvsProjNode) => {
+		// The code you place here will be executed every time your command is executed
+		if (projNode) {
+			exeMsBuild(msbuildPath,"Clean",projNode.fullPath);
 		}
 	};
 }
@@ -109,6 +125,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	vscode.commands.registerCommand('vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj', openTerminalNearbyMsvsProj());
 	vscode.commands.registerCommand('vscode-msvs-proj-manager.build-msvs-proj', buildMsvsProj(msbuildPath));
+	vscode.commands.registerCommand('vscode-msvs-proj-manager.clean-msvs-proj', cleanMsvsProj(msbuildPath));
 }
 
 // this method is called when your extension is deactivated
