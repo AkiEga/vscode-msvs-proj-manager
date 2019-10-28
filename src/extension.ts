@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import MsvsProjProvider from './msvsProj/MsvsProjProvider';
 import { MsvsProjNode } from './msvsProj/MsvsProjNode';
 import * as fs from 'fs';
+import * as childProccess from 'child_process';
 
 ///////////////////////////////////////////////////////////////////////////////
 // For utility
@@ -60,11 +61,32 @@ function openTerminalNearbyMsvsProj(): (...args: any[]) => any {
 	};
 }
 
+function buildMsvsProj(msbuildPath:string): (...args: any[]) => any {
+	return async (projNode: MsvsProjNode) => {
+		// The code you place here will be executed every time your command is executed
+		if (projNode) {
+			childProccess.exec(`"${msbuildPath}" /t:Build ${projNode.fullPath}`, (error, stdout, stderr) => {
+				if(error) {
+				  // エラー時は標準エラー出力を表示して終了
+				  console.log(stderr);
+				  return;
+				}
+				else {
+				  // 成功時は標準出力を表示して終了
+				  console.log(stdout);
+				}
+			  });
+		}
+	};
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // For extension events
 ///////////////////////////////////////////////////////////////////////////////
 export function activate(context: vscode.ExtensionContext) {
 	const slnFilePath:string = vscode.workspace.getConfiguration('vscode-msvs-proj-manager').get<string>('default-sln-file-path');
+	const msbuildPath:string = vscode.workspace.getConfiguration('vscode-msvs-proj-manager').get<string>('msbuild-file-path');
+
 	let mpp = new MsvsProjProvider(slnFilePath);
 	vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 
@@ -86,6 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	vscode.commands.registerCommand('vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj', openTerminalNearbyMsvsProj());
+	vscode.commands.registerCommand('vscode-msvs-proj-manager.build-msvs-proj', buildMsvsProj(msbuildPath));
 }
 
 // this method is called when your extension is deactivated

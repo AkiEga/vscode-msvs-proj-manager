@@ -22,6 +22,10 @@
 			{
 				"command": "vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj",
 				"title": "open terminal nearby msvs proj"
+			},
+			{
+				"command": "vscode-msvs-proj-manager.build-msvs-proj",
+				"title": "build msvs proj"
 			}
 		],
 		"views": {
@@ -36,6 +40,10 @@
 			"view/item/context": [
 				{
 					"command": "vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj",
+					"when": "view == slnExplorer"
+				},
+				{
+					"command": "vscode-msvs-proj-manager.build-msvs-proj",
 					"when": "view == slnExplorer"
 				}
 			]
