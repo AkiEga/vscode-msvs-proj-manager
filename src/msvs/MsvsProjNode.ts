@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as vsParse from "vs-parse";
+import * as vsParse from 'vs-parse';
 import * as path from 'path';
 
 export class MsvsProjNode extends vscode.TreeItem {	
