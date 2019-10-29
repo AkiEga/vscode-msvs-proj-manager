@@ -8,16 +8,23 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 	private rootDirPath:string;
 	private msvsProjRootNode:MsvsProjNode;
+	private tarSlnFilePath:string;
 
-	constructor(private readonly tarSlnFilePath:string) { 
-		this.rootDirPath = path.dirname(tarSlnFilePath);
-		let solutionData:any = vsParse.parseSolutionSync(tarSlnFilePath);
+	constructor(private readonly _tarSlnFilePath:string) { 
+		this.tarSlnFilePath = _tarSlnFilePath;
+		this.init();
+	}
+	private init():void{
+		this.rootDirPath = path.dirname(this.tarSlnFilePath);
+		let solutionData:any = vsParse.parseSolutionSync(this.tarSlnFilePath);
 		this.msvsProjRootNode = new MsvsProjNode(".", this.rootDirPath);
 		for(let p of solutionData.projects){
 			let topDir:string = p.relativePath.split("\\")[0];
 			this.msvsProjRootNode.addChild(topDir, p.relativePath);
 		}	
+		return;
 	}
+
 	public refresh(): any {
 		this._onDidChangeTreeData.fire();
 	}

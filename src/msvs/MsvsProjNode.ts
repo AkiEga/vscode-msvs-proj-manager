@@ -29,7 +29,7 @@ export class MsvsProjNode extends vscode.TreeItem {
 	public addChild(childRelativePath:string,fullDepthPath:string):void{
 		// add current children nodes		
 		let newProjNode:MsvsProjNode = this.CreateNodeAndAddChild(childRelativePath);
-		
+
 		// create next children nodes
 		if(newProjNode){			
 			let nextChildNodePath = this.GenNextChildNodePath(
@@ -70,8 +70,11 @@ export class MsvsProjNode extends vscode.TreeItem {
 		if(pathDiff === ""){
 			return;
 		}
-		nextChildNodePath = path.join(childRelativePath,pathDiff.split("\\")[1]);		
-
+		let pathDiffSplitted:string[] = pathDiff.split(/\\|\//);
+		let nextDirname:string = pathDiffSplitted[1];
+		if(nextDirname !== ""){
+			nextChildNodePath = path.join(childRelativePath,nextDirname);	
+		}
 		return nextChildNodePath;
 	}
 }
