@@ -1,7 +1,7 @@
 import * as fs from 'fs';
-import { MsvsProj } from './MsvsFilePaser';
+import { MsvsProj } from './MsvsProj';
 
-export class SlnFilePaser {
+export class SlnFileParser {
 	public tarSlnFilePath: string;
 	public rootDirPath: string;
 	public projects: MsvsProj[];
@@ -42,7 +42,7 @@ export class SlnFilePaser {
 			for (let s of splited) {
 				parsedLine.push(s.trim().replace(/"/g, ''));
 			}
-			this.projects.push(new MsvsProj(parsedLine[0], parsedLine[1], parsedLine[2], parsedLine[3]));
+			this.projects.push(new MsvsProj(parsedLine[0], parsedLine[1], parsedLine[2], parsedLine[3], this.rootDirPath));
 			// search "EndProject"
 			for (let i = lineIndex + 1; i < lines.length; i++) {
 				line = lines[i];
@@ -68,7 +68,7 @@ export class SlnFilePaser {
 			for (let s of splited) {
 				parsedLine.push(s.trim().replace(/"/g, ''));
 			}
-			this.projects.push(new MsvsProj(parsedLine[0], parsedLine[1], parsedLine[2], parsedLine[3]));
+			this.projects.push(new MsvsProj(parsedLine[0], parsedLine[1], parsedLine[2], parsedLine[3],this.rootDirPath));
 			// search "EndProject"
 			for (let i = lineIndex + 1; i < lines.length; i++) {
 				line = lines[i];

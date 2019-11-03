@@ -1,29 +1,16 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as vsParse from "vs-parse";
-import { SlnElem } from './MsvsFilePaser';
-import { SlnFilePaser } from "./SlnFilePaser";
+import { MsvsProj } from './MsvsProj';
+import { SlnFileParser } from "./SlnFileParser";
 
-export default class MsvsProjProvider implements vscode.TreeDataProvider<SlnElem> {
+export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsProj> {
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
-	private rootDirPath:string;
-	private msvsProjRootNode:SlnElem;
-	private tarSlnFilePath:string;
+	private sfp:SlnFileParser;
 
 	constructor(private readonly _tarSlnFilePath:string) { 
-		this.tarSlnFilePath = _tarSlnFilePath;
-		this.rootDirPath = path.dirname(this.tarSlnFilePath);
-		
-		let solutionData:any = vsParse.parseSolutionSync(this.tarSlnFilePath);
-		this.msvsProjRootNode = new SlnElem(".", this.rootDirPath);
-		for(let p of solutionData.projects){
-			let topDir:string = p.relativePath.split("\\")[0];
-			this.msvsProjRootNode.addChild(topDir, p.relativePath);
-		}	
-
-		let sfp = new SlnFilePaser(this.tarSlnFilePath, this.rootDirPath);
-
+		let rootDirPath = path.dirname(_tarSlnFilePath);
+		this.sfp = new SlnFileParser(_tarSlnFilePath, rootDirPath);
 		return;
 	}
 
@@ -31,20 +18,21 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<SlnElem
 		this._onDidChangeTreeData.fire();
 	}
 
-	public getTreeItem(element: SlnElem): vscode.TreeItem {
+	public getTreeItem(element: MsvsProj): vscode.TreeItem {
 		return element;
 	}
 
-	public getChildren(element?: SlnElem): SlnElem[] | Thenable<SlnElem[]> {
-		let ret:SlnElem[] = [];
+	public getChildren(element?: MsvsProj): MsvsProj[] | Thenable<MsvsProj[]> {
+		let ret:MsvsProj[] = [];
 		if(element){
-			if(path.dirname(element.fullPath) === this.rootDirPath){
-				ret = this.msvsProjRootNode.children;
+			let elemFullPath = path.join(this.sfp.rootDirPath, element.path);
+			if(elemFullPath === this.sfp.rootDirPath){
+				ret = this.sfp.projects;
 			}else{
 				ret = element.children;
 			}
 		}else{
-			ret = this.msvsProjRootNode.children;
+			ret = this.sfp.projects;
 		}
 		return ret;
 	}

@@ -76,7 +76,6 @@
 		"vscode-test": "^1.0.2"
 	},
 	"dependencies": {
-		"encoding-japanese": "^1.0.30",
-		"vs-parse": "^1.2.2"
+		"encoding-japanese": "^1.0.30"
 	}
 }
