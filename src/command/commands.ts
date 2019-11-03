@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as childProccess from 'child_process';
 import * as Encoding from 'encoding-japanese';
 
-import { SlnFileManager} from '../msvs/MsvsFilePaser';
+import { SlnElem} from '../msvs/MsvsFilePaser';
 //import { MsvsProjNode } from '../msvs/MsvsProjNode';
 import MsvsProjProvider from '../msvs/MsvsProjProvider';
 import * as fileUtil from '../util/fileUtil';
@@ -11,10 +11,10 @@ import * as fileUtil from '../util/fileUtil';
 // For extension command
 ///////////////////////////////////////////////////////////////////////////////
 export function openTerminalNearbyMsvsProj(): (...args: any[]) => any {
-	return async (projNode: SlnFileManager) => {
+	return async (projNode: SlnElem) => {
 		// The code you place here will be executed every time your command is executed
 		if (projNode) {
-			let dir = projNode.getProjDir();
+			let dir = projNode.projDir;
 			vscode.window.createTerminal({ cwd: dir }).show();
 		}
 	};
@@ -34,7 +34,7 @@ export function exeMsBuild(msbuildPath: string, target: string, projPath: string
 }
 
 export function buildMsvsProj(msbuildPath:string): (...args: any[]) => any {
-	return async (projNode: SlnFileManager) => {
+	return async (projNode: SlnElem) => {
 		// The code you place here will be executed every time your command is executed
 		if (projNode) {
 			exeMsBuild(msbuildPath,"Build",projNode.fullPath);
@@ -42,7 +42,7 @@ export function buildMsvsProj(msbuildPath:string): (...args: any[]) => any {
 	};
 }
 export function cleanMsvsProj(msbuildPath:string): (...args: any[]) => any {
-	return async (projNode: SlnFileManager) => {
+	return async (projNode: SlnElem) => {
 		// The code you place here will be executed every time your command is executed
 		if (projNode) {
 			exeMsBuild(msbuildPath,"Clean",projNode.fullPath);
