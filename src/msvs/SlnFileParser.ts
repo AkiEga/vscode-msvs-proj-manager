@@ -75,14 +75,11 @@ export class SlnFileParser {
 				let childProjGUID = matched[1];
 				let parentProjGUID = matched[2];
 
-				// find parent/child proj index
-				let parentProjIndex = this.rootMsvsProj.FindChildrenProjIndexByGUID(parentProjGUID);
-				let childProjIndex = this.rootMsvsProj.FindChildrenProjIndexByGUID(childProjGUID);
-
-				// move child proj to parent proj's under
-				if(parentProjIndex !== undefined && childProjIndex !== undefined){
-					let childProj:MsvsProj = this.PopProjByGUID(this.rootMsvsProj.children,childProjGUID);
-					this.rootMsvsProj.children[parentProjIndex].children.push(childProj);
+				// pop child proj
+				let childProj:MsvsProj
+					 = this.RandomPopProjByGUID(this.rootMsvsProj.children,childProjGUID);
+				if(childProj){
+					this.AddChildProjByGUID(this.rootMsvsProj.children,parentProjGUID,childProj);
 				}
 			}
 			// Detect End Point
@@ -94,7 +91,7 @@ export class SlnFileParser {
 		return newLineIndex;
 	}
 
-	private PopProjByGUID(projects:MsvsProj[], targetGUID:string):MsvsProj|undefined{
+	private RandomPopProjByGUID(projects:MsvsProj[], targetGUID:string):MsvsProj|undefined{
 		// pre check for a empty projects case
 		if(projects.length === 0){
 			return undefined;
@@ -110,7 +107,20 @@ export class SlnFileParser {
 		}else{
 			for(let p of projects){
 				// do same process to children proj recursively
-				return this.PopProjByGUID(p.children,targetGUID);
+				return this.RandomPopProjByGUID(p.children,targetGUID);
+			}
+		}
+	}
+
+	private AddChildProjByGUID(projects:MsvsProj[], parentGUID:string, childProj:MsvsProj):void{
+		let parentProjIndex = projects.findIndex((v)=>{return v.OwnGUID === parentGUID;});
+		if(parentProjIndex){
+			projects[parentProjIndex].children.push(childProj);
+			return;
+		}else{
+			for(let p of projects){
+				// do same process to children proj recursively
+				this.AddChildProjByGUID(p.children,parentGUID,childProj);
 			}
 		}
 	}
