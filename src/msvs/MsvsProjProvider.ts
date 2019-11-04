@@ -27,12 +27,12 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 		if(element){
 			let elemFullPath = path.join(this.sfp.rootDirPath, element.path);
 			if(elemFullPath === this.sfp.rootDirPath){
-				ret = this.sfp.projects;
+				ret = this.sfp.rootMsvsProj.children;
 			}else{
 				ret = element.children;
 			}
 		}else{
-			ret = this.sfp.projects;
+			ret = this.sfp.rootMsvsProj.children;
 		}
 		return ret;
 	}
