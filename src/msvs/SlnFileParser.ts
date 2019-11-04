@@ -116,12 +116,12 @@ export class SlnFileParser {
 		let parentProjIndex = projects.findIndex((v)=>{return v.OwnGUID === parentGUID;});
 		if(parentProjIndex){
 			projects[parentProjIndex].children.push(childProj);
-			return;
 		}else{
 			for(let p of projects){
 				// do same process to children proj recursively
 				this.AddChildProjByGUID(p.children,parentGUID,childProj);
 			}
 		}
+		return;		
 	}
 }
