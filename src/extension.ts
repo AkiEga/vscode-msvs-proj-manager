@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import MsvsProjProvider from './msvs/MsvsProjProvider';
-import * as cmd from './command/commands';
+import MsBuildCommander from './command/commands';
 
 ///////////////////////////////////////////////////////////////////////////////
 // For extension events
@@ -18,6 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let mpp = new MsvsProjProvider(slnFilePath);
 	vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 
+	let cmd = new MsBuildCommander(msbuildPath,slnFilePath);
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.read-sln-file', 
 		cmd.readSlnFile());
@@ -26,10 +27,10 @@ export function activate(context: vscode.ExtensionContext) {
 		cmd.openTerminalNearbyMsvsProj());
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.build-msvs-proj', 
-		cmd.buildMsvsProj(msbuildPath));
+		cmd.buildMsvsProj());
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.clean-msvs-proj', 
-		cmd.cleanMsvsProj(msbuildPath));
+		cmd.cleanMsvsProj());
 }
 
 // this method is called when your extension is deactivated

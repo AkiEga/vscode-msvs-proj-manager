@@ -9,63 +9,68 @@ import * as fileUtil from '../util/fileUtil';
 ///////////////////////////////////////////////////////////////////////////////
 // For extension command
 ///////////////////////////////////////////////////////////////////////////////
-export function openTerminalNearbyMsvsProj(): (...args: any[]) => any {
-	return async (projNode: MsvsProj) => {
-		// The code you place here will be executed every time your command is executed
-		if (projNode) {
-			let dir = projNode.projDir;
-			vscode.window.createTerminal({ cwd: dir }).show();
-		}
-	};
-}
-export function exeMsBuild(msbuildPath: string, target: string, projPath: string) {
-	let msbuildCmdStr: string = `"${msbuildPath}" /t:${target} ${projPath}`;
-	let exeOption: object = { encoding: 'Shift_JIS' };
-	childProccess.exec(msbuildCmdStr, exeOption, (error, stdout, stderr) => {
-		let retUTF8: string = Encoding.convert(stdout, {
-			from: 'SJIS',
-			to: 'UNICODE',
-			type: 'string',
+export default class MsBuildCommander{
+	constructor(public msbuildPath:string, public slnFilePath:string){
+	}
+	public openTerminalNearbyMsvsProj(): (...args: any[]) => any {
+		return async (projNode: MsvsProj) => {
+			// The code you place here will be executed every time your command is executed
+			if (projNode) {
+				let dir = projNode.projDir;
+				vscode.window.createTerminal({ cwd: dir }).show();
+			}
+		};
+	}
+	public readSlnFile(): (...args: any[]) => any{
+		return async () => {
+			if (vscode.workspace.workspaceFolders) {
+				let slnFiles:string[] = fileUtil.listupSlnFile();
+				let selectedSlnFile = "";
+				if (slnFiles.length === 1) {
+					selectedSlnFile = slnFiles[0];
+				} else if (slnFiles.length >= 2) {
+					selectedSlnFile = await vscode.window.showQuickPick(slnFiles);
+				} else {
+					return;
+				}
+				if (typeof (selectedSlnFile) !== undefined) {
+					let mpp = new MsvsProjProvider(selectedSlnFile);
+					vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
+				}
+			}
+			return;
+		};
+	}
+	
+	public buildMsvsProj(): (...args: any[]) => any {
+		return async (projNode: MsvsProj) => {
+			// The code you place here will be executed every time your command is executed
+			if (projNode) {
+				this.exeMsBuild("Build",projNode);
+			}
+		};
+	}
+	public cleanMsvsProj(): (...args: any[]) => any {
+		return async (projNode: MsvsProj) => {
+			// The code you place here will be executed every time your command is executed
+			if (projNode) {
+				this.exeMsBuild("Clean",projNode);
+			}
+		};
+	}
+
+	private exeMsBuild(target: string, targetProj: MsvsProj) {
+		let projLabel = targetProj.label.replace(".","_");
+		let msbuildCmdStr: string = `"${this.msbuildPath}" ${this.slnFilePath} -t:${projLabel};${target}`;
+		let exeOption: object = { encoding: 'Shift_JIS' };
+		childProccess.exec(msbuildCmdStr, exeOption, (error, stdout, stderr) => {
+			let retUTF8: string = Encoding.convert(stdout, {
+				from: 'SJIS',
+				to: 'UNICODE',
+				type: 'string',
+			});
+			console.log(retUTF8);
 		});
-		console.log(retUTF8);
-	});
-	return;
-}
-
-export function buildMsvsProj(msbuildPath:string): (...args: any[]) => any {
-	return async (projNode: MsvsProj) => {
-		// The code you place here will be executed every time your command is executed
-		if (projNode) {
-			exeMsBuild(msbuildPath,"Build",projNode.path);
-		}
-	};
-}
-export function cleanMsvsProj(msbuildPath:string): (...args: any[]) => any {
-	return async (projNode: MsvsProj) => {
-		// The code you place here will be executed every time your command is executed
-		if (projNode) {
-			exeMsBuild(msbuildPath,"Clean",projNode.path);
-		}
-	};
-}
-
-export function readSlnFile(): (...args: any[]) => any{
-	return async () => {
-		if (vscode.workspace.workspaceFolders) {
-			let slnFiles:string[] = fileUtil.listupSlnFile();
-			let selectedSlnFile = "";
-			if (slnFiles.length === 1) {
-				selectedSlnFile = slnFiles[0];
-			} else if (slnFiles.length >= 2) {
-				selectedSlnFile = await vscode.window.showQuickPick(slnFiles);
-			} else {
-				return;
-			}
-			if (typeof (selectedSlnFile) !== undefined) {
-				let mpp = new MsvsProjProvider(selectedSlnFile);
-				vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
-			}
-		}
 		return;
-	};
+	}
 }
