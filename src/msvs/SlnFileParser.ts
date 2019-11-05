@@ -79,7 +79,8 @@ export class SlnFileParser {
 				let childProj:MsvsProj
 					 = this.RandomPopProjByGUID(this.rootMsvsProj.children,childProjGUID);
 				if(childProj){
-					this.AddChildProjByGUID(this.rootMsvsProj.children,parentProjGUID,childProj);
+					childProj.idealPath = "";
+					this.AddChildProjByGUID(this.rootMsvsProj.children,parentProjGUID,childProj, "");
 				}
 			}
 			// Detect End Point
@@ -112,14 +113,23 @@ export class SlnFileParser {
 		}
 	}
 
-	private AddChildProjByGUID(projects:MsvsProj[], parentGUID:string, childProj:MsvsProj):void{
+	private AddChildProjByGUID(projects:MsvsProj[], parentGUID:string, childProj:MsvsProj, additionalIdealPath:string):void{
 		let parentProjIndex = projects.findIndex((v)=>{return v.OwnGUID === parentGUID;});
 		if(parentProjIndex){
+			let idealPath:string;
+			if(additionalIdealPath !== "" ){
+				idealPath = `${additionalIdealPath}\\${projects[parentProjIndex].idealPath}\\${childProj.idealLeafName}`;
+			}else{
+				idealPath = `${projects[parentProjIndex].idealPath}\\${childProj.idealLeafName}`;
+			}
+
+			childProj.idealPath = idealPath;
 			projects[parentProjIndex].children.push(childProj);
 		}else{
 			for(let p of projects){
 				// do same process to children proj recursively
-				this.AddChildProjByGUID(p.children,parentGUID,childProj);
+				additionalIdealPath += p.idealPath;
+				this.AddChildProjByGUID(p.children,parentGUID,childProj,additionalIdealPath);
 			}
 		}
 		return;		

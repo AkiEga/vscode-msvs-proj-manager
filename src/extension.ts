@@ -18,7 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
 	let mpp = new MsvsProjProvider(slnFilePath);
 	vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 
-	let cmd = new MsBuildCommander(msbuildPath,slnFilePath);
+	let outputChannel = vscode.window.createOutputChannel("MPM:msBuild result");
+	let cmd = new MsBuildCommander(msbuildPath,slnFilePath, outputChannel);
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.read-sln-file', 
 		cmd.readSlnFile());

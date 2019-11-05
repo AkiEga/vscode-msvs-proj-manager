@@ -10,7 +10,7 @@ import * as fileUtil from '../util/fileUtil';
 // For extension command
 ///////////////////////////////////////////////////////////////////////////////
 export default class MsBuildCommander{
-	constructor(public msbuildPath:string, public slnFilePath:string){
+	constructor(public msbuildPath:string, public slnFilePath:string, public outputChannel:vscode.OutputChannel){
 	}
 	public openTerminalNearbyMsvsProj(): (...args: any[]) => any {
 		return async (projNode: MsvsProj) => {
@@ -60,15 +60,20 @@ export default class MsBuildCommander{
 	}
 
 	private exeMsBuild(target: string, targetProj: MsvsProj) {
-		let projLabel = targetProj.label.replace(".","_");
-		let msbuildCmdStr: string = `"${this.msbuildPath}" ${this.slnFilePath} -t:${projLabel};${target}`;
+		let msbuildCmdStr: string = `"${this.msbuildPath}" ${this.slnFilePath} -t:${targetProj.idealPath};${target}`;
 		let exeOption: object = { encoding: 'Shift_JIS' };
+
+		// clear output channel on vscode
+		this.outputChannel.clear();
+
+		// execute a msBuild command
 		childProccess.exec(msbuildCmdStr, exeOption, (error, stdout, stderr) => {
 			let retUTF8: string = Encoding.convert(stdout, {
 				from: 'SJIS',
 				to: 'UNICODE',
 				type: 'string',
 			});
+			this.outputChannel.append(retUTF8);
 			console.log(retUTF8);
 		});
 		return;
