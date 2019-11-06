@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { MsvsProj } from './MsvsProj';
 import * as vscode from 'vscode';
+import * as util from 'util';
 
 export class SlnFileParser {
 	public rootMsvsProj: MsvsProj;
@@ -18,6 +19,8 @@ export class SlnFileParser {
 			}			
 			let lines: string[] = data.split('\n');			
 			this.Parse(lines, 0);
+			this.outputChannel.appendLine(`[Info] Detail info of parsed projects:`);
+			this.outputChannel.append(util.inspect(this.rootMsvsProj.children,{showHidden: true, depth: Infinity }));
 		});
 	}
 	private Parse(lines: string[], lineIndex: number): void {
@@ -87,6 +90,8 @@ export class SlnFileParser {
 				if(childProj){
 					childProj.idealPath = "";
 					this.AddChildProjByGUID(this.rootMsvsProj.children,parentProjGUID,childProj, "");
+					let parentProj = this.FindByGUID(this.rootMsvsProj.children, parentProjGUID);
+					this.outputChannel.appendLine(`[Info] Linked Project:"${parentProj.label}"->"${childProj.label}".`);
 				}
 			}
 			// Detect End Point
@@ -118,7 +123,25 @@ export class SlnFileParser {
 			}
 		}
 	}
+	private FindByGUID(projects:MsvsProj[], targetGUID:string):MsvsProj|undefined{
+		// pre check for a empty projects case
+		if(projects.length === 0){
+			return undefined;
+		}
 
+		let foundProjIndex = projects.findIndex((v)=>{return v.OwnGUID === targetGUID;});
+		if(foundProjIndex){
+			// clone found proj and return
+			let ret:MsvsProj = projects[foundProjIndex];
+
+			return ret;
+		}else{
+			for(let p of projects){
+				// do same process to children proj recursively
+				return this.RandomPopProjByGUID(p.children,targetGUID);
+			}
+		}
+	}
 	private AddChildProjByGUID(projects:MsvsProj[], parentGUID:string, childProj:MsvsProj, additionalIdealPath:string):void{
 		let parentProjIndex = projects.findIndex((v)=>{return v.OwnGUID === parentGUID;});
 		if(parentProjIndex){

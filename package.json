@@ -3,7 +3,7 @@
 	"displayName": "vscode-msvs-proj-manager",
 	"description": "",
 	"publisher": "akiega",
-	"version": "0.0.5",
+	"version": "0.0.7",
 	"license": "MIT",
 	"repository": {
 		"url": "https://github.com/AkiEga/vscode-msvs-proj-manager"
@@ -63,6 +63,7 @@
 		}
 	},
 	"scripts": {
+		"vscode:publish": "vsce package;vsce publish patch",
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
