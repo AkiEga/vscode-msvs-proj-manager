@@ -2,7 +2,12 @@
 	"name": "vscode-msvs-proj-manager",
 	"displayName": "vscode-msvs-proj-manager",
 	"description": "",
+	"publisher": "akiega",
 	"version": "0.0.1",
+	"license": "MIT",
+	"repository": {
+		"url": ""
+	},
 	"engines": {
 		"vscode": "^1.39.0"
 	},

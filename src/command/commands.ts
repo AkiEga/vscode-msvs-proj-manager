@@ -34,7 +34,7 @@ export default class MsBuildCommander{
 					return;
 				}
 				if (typeof (selectedSlnFile) !== undefined) {
-					let mpp = new MsvsProjProvider(selectedSlnFile);
+					let mpp = new MsvsProjProvider(selectedSlnFile, this.outputChannel);
 					vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 				}
 			}
@@ -63,18 +63,19 @@ export default class MsBuildCommander{
 		let msbuildCmdStr: string = `"${this.msbuildPath}" ${this.slnFilePath} -t:${targetProj.idealPath};${target}`;
 		let exeOption: object = { encoding: 'Shift_JIS' };
 
-		// clear output channel on vscode
-		this.outputChannel.clear();
+		// output channel on vscode
+		this.outputChannel.appendLine(`[Info] execute command "${msbuildCmdStr}"`);
 
 		// execute a msBuild command
-		childProccess.exec(msbuildCmdStr, exeOption, (error, stdout, stderr) => {
-			let retUTF8: string = Encoding.convert(stdout, {
+		childProccess.exec(msbuildCmdStr, exeOption, (error, stdout:Buffer, stderr) => {
+			let stdoutUTF8: string = Encoding.convert(stdout, {
 				from: 'SJIS',
 				to: 'UNICODE',
 				type: 'string',
 			});
-			this.outputChannel.append(retUTF8);
-			console.log(retUTF8);
+			// let stdoutUTF8 = stdout.toString('Shift_JIS');
+			this.outputChannel.append(stdoutUTF8);
+			console.log(stdout);
 		});
 		return;
 	}

@@ -8,6 +8,8 @@ import MsBuildCommander from './command/commands';
 // For extension events
 ///////////////////////////////////////////////////////////////////////////////
 export function activate(context: vscode.ExtensionContext) {
+	let outputChannel = vscode.window.createOutputChannel("vscode-msvs-proj-manager");
+
 	const slnFilePath:string 
 		= vscode.workspace.getConfiguration('vscode-msvs-proj-manager')
 			.get<string>('default-sln-file-path');
@@ -15,10 +17,9 @@ export function activate(context: vscode.ExtensionContext) {
 		= vscode.workspace.getConfiguration('vscode-msvs-proj-manager')
 			.get<string>('msbuild-file-path');
 
-	let mpp = new MsvsProjProvider(slnFilePath);
+	let mpp = new MsvsProjProvider(slnFilePath, outputChannel);
 	vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 
-	let outputChannel = vscode.window.createOutputChannel("MPM:msBuild result");
 	let cmd = new MsBuildCommander(msbuildPath,slnFilePath, outputChannel);
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.read-sln-file', 
