@@ -61,7 +61,7 @@ export default class MsBuildCommander{
 	}
 
 	private exeMsBuild(target: string, targetProj: MsvsProj) {
-		let msbuildCmdStr: string = `"${this.msbuildPath}" ${this.slnFilePath} -t:${targetProj.idealPath};${target}`;
+		let msbuildCmdStr: string = `"${this.msbuildPath}" "${this.slnFilePath}" -t:${targetProj.idealPath};${target}`;
 		let exeOption: object = { encoding: 'Shift_JIS' };
 
 		// output channel on vscode
@@ -69,14 +69,16 @@ export default class MsBuildCommander{
 
 		// execute a msBuild command
 		childProccess.exec(msbuildCmdStr, exeOption, (error, stdout:Buffer, stderr) => {
-			let stdoutUTF8: string = Encoding.convert(stdout, {
+			let stdoutUTF8: string|number[]|ArrayBuffer = Encoding.convert(stdout, {
 				from: 'SJIS',
 				to: 'UNICODE',
 				type: 'string',
 			});
 			// let stdoutUTF8 = stdout.toString('Shift_JIS');
-			this.outputChannel.append(stdoutUTF8);
-			console.log(stdout);
+			if(typeof stdoutUTF8 === 'string'){
+				this.outputChannel.append(stdoutUTF8);
+				console.log(stdout);
+			}
 		});
 		return;
 	}
