@@ -10,13 +10,14 @@ OS: Windows 10
 vscode: 1.39.0  
 
 ## Extension Settings
-To read .sln file while this extension is activated, please prepair the below json statement in `${workspaceDir}.vscode/settings.json`.  
+To read .sln file while this extension is activated, please prepair the below json statement in `${workspaceDir}/.vscode/settings.json`.  
 
 For example:
 ```json
 {
 	"vscode-msvs-proj-manager": {
-		"default-sln-file-path": "${targetProjectRootDir}/hoge.sln"
+		"default-sln-file-path": "C:/work/hoge/fuga.sln",
+		"msbuild-file-path": "C:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe"
 	}
 }
 ```

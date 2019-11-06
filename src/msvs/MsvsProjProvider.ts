@@ -11,7 +11,7 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 	constructor(private readonly _tarSlnFilePath:string,  private outputChannel:vscode.OutputChannel) { 
 		let rootDirPath = path.dirname(_tarSlnFilePath);
 		outputChannel.appendLine(`[Info] start to read "${_tarSlnFilePath}".`);
-		this.sfp = new SlnFileParser(_tarSlnFilePath, rootDirPath);
+		this.sfp = new SlnFileParser(_tarSlnFilePath, rootDirPath, outputChannel);
 		outputChannel.appendLine(`[Info] end to read "${_tarSlnFilePath}".`);
 		return;
 	}

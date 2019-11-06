@@ -18,12 +18,12 @@ export function activate(context: vscode.ExtensionContext) {
 			.get<string>('msbuild-file-path');
 
 	let mpp = new MsvsProjProvider(slnFilePath, outputChannel);
-	vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
+	let tree:vscode.TreeView<MsvsProjProvider> = vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 
 	let cmd = new MsBuildCommander(msbuildPath,slnFilePath, outputChannel);
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.read-sln-file', 
-		cmd.readSlnFile());
+		cmd.readSlnFile(tree));
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj', 
 		cmd.openTerminalNearbyMsvsProj());

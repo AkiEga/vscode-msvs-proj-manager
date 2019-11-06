@@ -1,17 +1,22 @@
 import * as fs from 'fs';
 import { MsvsProj } from './MsvsProj';
+import * as vscode from 'vscode';
 
 export class SlnFileParser {
-	public tarSlnFilePath: string;
-	public rootDirPath: string;
 	public rootMsvsProj: MsvsProj;
-	constructor(_tarSlnFilePath: string, _rootDirPath: string) {
-		this.tarSlnFilePath = _tarSlnFilePath;
-		this.rootDirPath = _rootDirPath;
+	constructor(
+		public tarSlnFilePath: string, 
+		public rootDirPath: string, 
+		private outputChannel:vscode.OutputChannel) {
 		this.rootMsvsProj = new MsvsProj('','','','',this.rootDirPath);
 		// .sln read file
 		fs.readFile(this.tarSlnFilePath, 'utf-8', (err, data) => {
-			let lines: string[] = data.split('\n');
+			if(err){
+				this.outputChannel.appendLine(`[Error] Failed reading "${this.tarSlnFilePath}".`);
+			}else{
+				this.outputChannel.appendLine(`[Info] Succeed in reading "${this.tarSlnFilePath}".`);
+			}			
+			let lines: string[] = data.split('\n');			
 			this.Parse(lines, 0);
 		});
 	}
@@ -43,6 +48,7 @@ export class SlnFileParser {
 				parsedLine.push(s.trim().replace(/"/g, ''));
 			}
 			this.rootMsvsProj.children.push(new MsvsProj(parsedLine[0], parsedLine[1], parsedLine[2], parsedLine[3], this.rootDirPath));
+			this.outputChannel.appendLine(`[Info] Add Project:"${parsedLine[1]}".`);
 			// search "EndProject"
 			for (let i = lineIndex + 1; i < lines.length; i++) {
 				line = lines[i];

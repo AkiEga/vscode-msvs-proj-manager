@@ -21,7 +21,7 @@ export default class MsBuildCommander{
 			}
 		};
 	}
-	public readSlnFile(): (...args: any[]) => any{
+	public readSlnFile(tree:vscode.TreeView<MsvsProjProvider>): (...args: any[]) => any{
 		return async () => {
 			if (vscode.workspace.workspaceFolders) {
 				let slnFiles:string[] = fileUtil.listupSlnFile();
@@ -35,7 +35,8 @@ export default class MsBuildCommander{
 				}
 				if (typeof (selectedSlnFile) !== undefined) {
 					let mpp = new MsvsProjProvider(selectedSlnFile, this.outputChannel);
-					vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
+					tree.reveal(mpp);
+					// vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 				}
 			}
 			return;
