@@ -3,7 +3,7 @@
 	"displayName": "vscode-msvs-proj-manager",
 	"description": "",
 	"publisher": "akiega",
-	"version": "0.1.4",
+	"version": "0.1.10",
 	"license": "MIT",
 	"repository": {
 		"url": "https://github.com/AkiEga/vscode-msvs-proj-manager"
@@ -63,12 +63,10 @@
 		}
 	},
 	"scripts": {
-		"vscode:publish": "vsce package;vsce publish patch",
-		"vscode:prepublish": "yarn run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "yarn run compile",
-		"test": "node ./out/test/runTest.js"
+		"vscode:prepublish": "webpack --mode production",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
+		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
@@ -77,9 +75,12 @@
 		"@types/vscode": "^1.39.0",
 		"glob": "^7.1.4",
 		"mocha": "^6.1.4",
+		"ts-loader": "^6.2.1",
 		"tslint": "^5.12.1",
 		"typescript": "^3.3.1",
-		"vscode-test": "^1.0.2"
+		"vscode-test": "^1.0.2",
+		"webpack": "^4.41.2",
+		"webpack-cli": "^3.3.10"
 	},
 	"dependencies": {
 		"iconv-lite": "^0.5.0"
