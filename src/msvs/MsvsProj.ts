@@ -19,7 +19,7 @@ export class MsvsProj extends vscode.TreeItem {
 			}
 		}
 		this.children = [];
-		this.idealPath = label.replace(/\./g, '_');
+		// this.idealPath = label.replace(/\./g, '_');
 	}
 	get leafname(): string {
 		return path.basename(this.FilePath);

@@ -17,8 +17,15 @@ export class SlnFileParser {
 			}else{
 				this.outputChannel.appendLine(`[Info] Succeed in reading "${this.tarSlnFilePath}".`);
 			}			
-			let lines: string[] = data.split('\n');			
+			let lines: string[] = data.split(/\n|\r\n|\r/g);			
 			this.Parse(lines, 0);
+
+			for(let p of this.rootMsvsProj.children){
+				p.idealPath = p.label;
+				if(p.HasChildren){
+					this.SetIdealPathRecursively(p.children,p.idealPath);
+				}
+			}
 			this.outputChannel.appendLine(`[Info] Detail info of parsed projects:`);
 			this.outputChannel.append(util.inspect(this.rootMsvsProj.children,{showHidden: true, depth: Infinity }));
 		});
@@ -129,38 +136,47 @@ export class SlnFileParser {
 			return undefined;
 		}
 
-		let foundProjIndex = projects.findIndex((v)=>{return v.OwnGUID === targetGUID;});
-		if(foundProjIndex){
-			// clone found proj and return
-			let ret:MsvsProj = projects[foundProjIndex];
+		for(let i=0;i<projects.length;i++){
+			if(projects[i].OwnGUID === targetGUID){
+				// clone found proj and return
+				let foundProjIndex =  i;
+				let ret:MsvsProj = projects[foundProjIndex];
 
-			return ret;
-		}else{
-			for(let p of projects){
-				// do same process to children proj recursively
-				return this.RandomPopProjByGUID(p.children,targetGUID);
+				return ret;
 			}
 		}
+
+		// do same process to children proj recursively			
+		for(let p of projects){	
+			if(p.HasChildren){
+				return this.FindByGUID(p.children,targetGUID);
+			}
+		}
+		return undefined;
 	}
 	private AddChildProjByGUID(projects:MsvsProj[], parentGUID:string, childProj:MsvsProj, additionalIdealPath:string):void{
-		let parentProjIndex = projects.findIndex((v)=>{return v.OwnGUID === parentGUID;});
-		if(parentProjIndex){
-			let idealPath:string;
-			if(additionalIdealPath !== "" ){
-				idealPath = `${additionalIdealPath}\\${projects[parentProjIndex].idealPath}\\${childProj.idealLeafName}`;
-			}else{
-				idealPath = `${projects[parentProjIndex].idealPath}\\${childProj.idealLeafName}`;
+		for(let i=0;i<projects.length;i++){
+			if(projects[i].OwnGUID === parentGUID){
+				let parentProjIndex = i;
+				projects[parentProjIndex].children.push(childProj);
 			}
-
-			childProj.idealPath = idealPath;
-			projects[parentProjIndex].children.push(childProj);
-		}else{
-			for(let p of projects){
-				// do same process to children proj recursively
-				additionalIdealPath += p.idealPath;
+		}
+			
+		// do same process to children proj recursively
+		for(let p of projects){
+			if(p.HasChildren){
 				this.AddChildProjByGUID(p.children,parentGUID,childProj,additionalIdealPath);
 			}
 		}
 		return;		
+	}
+	private SetIdealPathRecursively(projects:MsvsProj[],additionalIdealPath:string):void{
+		for(let p of projects){
+			p.idealPath = `${additionalIdealPath}\\${p.idealLeafName}`;
+			if(p.HasChildren){
+				this.SetIdealPathRecursively(p.children,`${additionalIdealPath}\\${p.idealPath}`);
+			}
+		}
+		return;
 	}
 }

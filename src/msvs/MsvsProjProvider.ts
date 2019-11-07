@@ -23,7 +23,9 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 	public getTreeItem(element: MsvsProj): vscode.TreeItem {
 		return element;
 	}
-
+	public getParent(element: MsvsProj): MsvsProj {
+		return element;
+	}
 	public getChildren(element?: MsvsProj): MsvsProj[] | Thenable<MsvsProj[]> {
 		let ret:MsvsProj[] = [];
 		if(element){
