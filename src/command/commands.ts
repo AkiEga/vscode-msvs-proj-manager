@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as childProccess from 'child_process';
-import * as Encoding from 'encoding-japanese';
 
 import { MsvsProj} from '../msvs/MsvsProj';
 import MsvsProjProvider from '../msvs/MsvsProjProvider';
 import * as fileUtil from '../util/fileUtil';
+import * as iconv from 'iconv-lite';
 
 ///////////////////////////////////////////////////////////////////////////////
 // For extension command
@@ -69,17 +69,12 @@ export default class MsBuildCommander{
 
 		// execute a msBuild command
 		childProccess.exec(msbuildCmdStr, exeOption, (error, stdout:Buffer, stderr) => {
-			let stdoutUTF8: string|number[]|ArrayBuffer = Encoding.convert(stdout, {
-				from: 'SJIS',
-				to: 'UNICODE',
-				type: 'string',
-			});
-			// let stdoutUTF8 = stdout.toString('Shift_JIS');
-			if(typeof stdoutUTF8 === 'string'){
-				this.outputChannel.append(stdoutUTF8);
-				console.log(stdout);
-			}
+			let stdoutUTF8: string = iconv.decode(stdout, 'Shift_JIS');
+			// let stdoutUTF8 = stdout.toString('Shift_JIS');			
+			this.outputChannel.append(stdoutUTF8);
+			console.log(stdoutUTF8);
 		});
+
 		return;
 	}
 }
