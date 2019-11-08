@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { MsvsProj } from './MsvsProj';
 import * as vscode from 'vscode';
 import * as util from 'util';
+import { parentPort } from 'worker_threads';
 
 export class SlnFileParser {
 	public rootMsvsProj: MsvsProj;
@@ -98,7 +99,7 @@ export class SlnFileParser {
 					childProj.idealPath = "";
 					this.AddChildProjByGUID(this.rootMsvsProj.children,parentProjGUID,childProj, "");
 					let parentProj = this.FindByGUID(this.rootMsvsProj.children, parentProjGUID);
-					this.outputChannel.appendLine(`[Info] Linked Project:"${parentProj.label}"->"${childProj.label}".`);
+					this.outputChannel.appendLine(`[Info] Linked Project:"${parentProj.label}(${parentProjGUID})"->"${childProj.label}(${childProjGUID})".`);
 				}
 			}
 			// Detect End Point
@@ -115,17 +116,20 @@ export class SlnFileParser {
 		if(projects.length === 0){
 			return undefined;
 		}
+		
+		for(let i=0;i<projects.length;i++){
+			if(projects[i].OwnGUID === targetGUID){
+				// clone found proj and remove original proj in projects array
+				let ret:MsvsProj = projects[i];
+				projects.splice(i,1);
 
-		let foundProjIndex = projects.findIndex((v)=>{return v.OwnGUID === targetGUID;});
-		if(foundProjIndex){
-			// clone found proj and remove original proj in projects array
-			let ret:MsvsProj = projects[foundProjIndex];
-			projects.splice(foundProjIndex,1);
-
-			return ret;
-		}else{
-			for(let p of projects){
-				// do same process to children proj recursively
+				return ret;
+			}
+		}
+		// do same process to children proj recursively	
+		for(let p of projects){
+			// do same process to children proj recursively
+			if(p.HasChildren){
 				return this.RandomPopProjByGUID(p.children,targetGUID);
 			}
 		}
