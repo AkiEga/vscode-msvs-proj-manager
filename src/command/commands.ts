@@ -74,7 +74,7 @@ export default class MsBuildCommander{
 
 		// output channel on vscode
 		this.outputChannel.appendLine(
-			`[Info] execute command ""${this.msbuildPath}" ${msbuildArgs}"`);
+			`[Info] execute command ""${this.msbuildPath}" ${msbuildArgs.join(" ")}"`);
 
 		// execute a msBuild command
 		let child = childProccess.execFile(this.msbuildPath, msbuildArgs, exeOption);
