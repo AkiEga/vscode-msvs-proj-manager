@@ -61,11 +61,9 @@ export default class MsBuildCommander{
 	}
 
 	private exeMsBuild(target: string, targetProj: MsvsProj) {
-
 		let msbuildArgs:string[] = [
 			this.slnFilePath,
-			`-t:${targetProj.idealPath}`,
-			`-t:${target}`
+			`-t:${targetProj.idealPath};${target}`
 		];
 		let exeOption: object = { 
 			encoding: 'Shift_JIS', 
@@ -83,9 +81,7 @@ export default class MsBuildCommander{
 		child.unref();
 		child.stdout.on('data', (data) => {
 			let stdoutUTF8: string = iconv.decode(data, 'Shift_JIS');
-			// let stdoutUTF8 = stdout.toString('Shift_JIS');			
 			this.outputChannel.append(stdoutUTF8);
-			console.log(stdoutUTF8);
 		});
 
 		return;
