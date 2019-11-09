@@ -36,8 +36,8 @@ export class SlnFileParser {
 
 		// debug output
 		this.outputChannel.appendLine(`[Info] Detail info of parsed projects:`);
-		this.outputChannel.append(util.inspect(this.rootMsvsProj.children,{showHidden: true, depth: Infinity }));
-		
+		this.outputChannel.append(util.inspect(this.rootMsvsProj.children,{showHidden: true, depth: Infinity })+"\n");
+
 		return;
 	}
 	private Parse(lines: string[], lineIndex: number): void {
@@ -177,9 +177,9 @@ export class SlnFileParser {
 	}
 	private SetIdealPathRecursively(projects:MsvsProj[],additionalIdealPath:string):void{
 		for(let p of projects){
-			p.idealPath = `${additionalIdealPath}\\${p.idealLeafName}`;
+			p.idealPath = `${additionalIdealPath}\\${p.label}`;
 			if(p.HasChildren){
-				this.SetIdealPathRecursively(p.children,`${additionalIdealPath}\\${p.idealPath}`);
+				this.SetIdealPathRecursively(p.children,`${p.idealPath}`);
 			}
 		}
 		return;
