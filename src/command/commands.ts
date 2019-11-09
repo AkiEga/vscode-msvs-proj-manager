@@ -62,9 +62,12 @@ export default class MsBuildCommander{
 
 	private exeMsBuild(target: string, targetProj: MsvsProj) {
 		let msbuildArgs:string[] = [
+			this.msbuildPath,
 			this.slnFilePath,
 			`-t:${targetProj.idealPath};${target}`
 		];
+		let msbuildCmd:string 
+			= `"${this.msbuildPath}" "${this.slnFilePath}" -t:${targetProj.idealPath};${target}`;
 		let exeOption: object = { 
 			encoding: 'Shift_JIS', 
 			// detachment and ignored stdin are the key here: 
@@ -77,7 +80,7 @@ export default class MsBuildCommander{
 			`[Info] execute command ""${this.msbuildPath}" ${msbuildArgs.join(" ")}"`);
 
 		// execute a msBuild command
-		let child = childProccess.execFile(this.msbuildPath, msbuildArgs, exeOption);
+		let child = childProccess.exec(msbuildCmd, exeOption);
 		child.unref();
 		child.stdout.on('data', (data) => {
 			let stdoutUTF8: string = iconv.decode(data, 'Shift_JIS');
