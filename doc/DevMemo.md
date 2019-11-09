@@ -9,8 +9,8 @@
 - parsing sln file
 	- [x] in the first time, set OwnGUID of root msvs proj 	
 - building
-	- [ ] solution build
-	- [ ] solution clean
+	- [x] solution build
+	- [x] solution clean
 	- [x] live outputting build results
 
 - UI

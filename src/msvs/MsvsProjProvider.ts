@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { MsvsProj } from './MsvsProj';
+import { SlnElem } from './MsvsProj';
 import { SlnFileParser } from "./SlnFileParser";
 
-export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsProj> {
+export default class MsvsProjProvider implements vscode.TreeDataProvider<SlnElem> {
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 	private sfp:SlnFileParser;
@@ -20,14 +20,14 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 		this._onDidChangeTreeData.fire();
 	}
 
-	public getTreeItem(element: MsvsProj): vscode.TreeItem {
+	public getTreeItem(element: SlnElem): vscode.TreeItem {
 		return element;
 	}
-	public getParent(element: MsvsProj): MsvsProj {
+	public getParent(element: SlnElem): SlnElem {
 		return element;
 	}
-	public getChildren(element?: MsvsProj): MsvsProj[] | Thenable<MsvsProj[]> {
-		let ret:MsvsProj[] = [];
+	public getChildren(element?: SlnElem): SlnElem[] | Thenable<SlnElem[]> {
+		let ret:SlnElem[] = [];
 		if(element){
 			let elemFullPath = path.join(this.sfp.rootDirPath, element.fullpath);
 			if(elemFullPath === this.sfp.rootDirPath){
@@ -36,7 +36,7 @@ export default class MsvsProjProvider implements vscode.TreeDataProvider<MsvsPro
 				ret = element.children;
 			}
 		}else{
-			ret = this.sfp.rootMsvsProj.children;
+			ret = [this.sfp.rootMsvsProj];
 		}
 		return ret;
 	}

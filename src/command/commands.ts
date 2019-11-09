@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as childProccess from 'child_process';
 
-import { MsvsProj} from '../msvs/MsvsProj';
+import { SlnElem, SlnElemType} from '../msvs/MsvsProj';
 import MsvsProjProvider from '../msvs/MsvsProjProvider';
 import * as fileUtil from '../util/fileUtil';
 import * as iconv from 'iconv-lite';
@@ -13,7 +13,7 @@ export default class MsBuildCommander{
 	constructor(public msbuildPath:string, public slnFilePath:string, public outputChannel:vscode.OutputChannel){
 	}
 	public openTerminalNearbyMsvsProj(): (...args: any[]) => any {
-		return async (projNode: MsvsProj) => {
+		return async (projNode: SlnElem) => {
 			// The code you place here will be executed every time your command is executed
 			if (projNode) {
 				let dir = projNode.projDir;
@@ -36,7 +36,6 @@ export default class MsBuildCommander{
 				if (typeof (selectedSlnFile) !== undefined) {
 					let mpp = new MsvsProjProvider(selectedSlnFile, this.outputChannel);
 					tree.reveal(mpp);
-					// vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 				}
 			}
 			return;
@@ -44,18 +43,22 @@ export default class MsBuildCommander{
 	}
 	
 	public buildMsvsProj(): (...args: any[]) => any {
-		return async (projNode: MsvsProj) => {
+		return async (projNode: SlnElem) => {
 			// The code you place here will be executed every time your command is executed
-			if (projNode) {
+			if(projNode.type === SlnElemType.proj){
 				this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath}`);
+			}else if(projNode.type === SlnElemType.sln){
+					this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}"`);
 			}
 		};
 	}
 	public cleanMsvsProj(): (...args: any[]) => any {
-		return async (projNode: MsvsProj) => {
+		return async (projNode: SlnElem) => {
 			// The code you place here will be executed every time your command is executed
-			if (projNode) {
+			if(projNode.type === SlnElemType.proj){
 				this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath}:Clean`);
+			}else if(projNode.type === SlnElemType.sln){
+				this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:Clean`);
 			}
 		};
 	}

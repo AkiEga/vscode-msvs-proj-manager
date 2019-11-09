@@ -1,17 +1,24 @@
 import * as fs from 'fs';
-import { MsvsProj } from './MsvsProj';
+import { SlnElem, SlnElemType } from './MsvsProj';
 import * as vscode from 'vscode';
 import * as util from 'util';
+import * as path from 'path';
 import { parentPort } from 'worker_threads';
 
 export class SlnFileParser {
-	public rootMsvsProj: MsvsProj;
+	public rootMsvsProj: SlnElem;
 	private isFirstProject:boolean = true;
 	constructor(
 		public tarSlnFilePath: string, 
 		public rootDirPath: string, 
 		private outputChannel:vscode.OutputChannel) {
-		this.rootMsvsProj = new MsvsProj('','','','',this.rootDirPath);
+		let tarSlnFileBasename = path.basename(this.tarSlnFilePath);
+
+		// set root msvs proj (.sln file)
+		this.rootMsvsProj = new SlnElem('',tarSlnFileBasename,tarSlnFileBasename,'',this.rootDirPath);
+		this.rootMsvsProj.type = SlnElemType.sln;
+		this.rootMsvsProj.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+		
 
 		// .sln read file
 		let data:string;
@@ -28,9 +35,12 @@ export class SlnFileParser {
 
 		// apend label to parsed msvs projects
 		for(let p of this.rootMsvsProj.children){
-			p.idealPath = p.idealLabel;
+			p.idealPath = p.idealLabel;			
 			if(p.HasChildren){
+				p.type = SlnElemType.folder;
 				this.SetIdealPathRecursively(p.children,p.idealPath);
+			}else{
+				p.type = SlnElemType.proj;
 			}
 		}
 
@@ -72,7 +82,7 @@ export class SlnFileParser {
 			this.rootMsvsProj.OwnGUID = ParentGUID;
 			this.isFirstProject = false;
 		}
-		this.rootMsvsProj.children.push(new MsvsProj(ParentGUID, label, FilePath, OwnGUID, this.rootDirPath));
+		this.rootMsvsProj.children.push(new SlnElem(ParentGUID, label, FilePath, OwnGUID, this.rootDirPath));
 		this.outputChannel.appendLine(`[Info] Add Project:"${matched[1]}".`);
 
 		// search "EndProject" 
@@ -104,7 +114,7 @@ export class SlnFileParser {
 				let parentProjGUID = matched[2];
 
 				// pop child proj
-				let childProj:MsvsProj
+				let childProj:SlnElem
 					 = this.RandomPopProjByGUID(this.rootMsvsProj.children,childProjGUID);
 				if(childProj){
 					childProj.idealPath = "";
@@ -121,7 +131,7 @@ export class SlnFileParser {
 		return nextLineIndex;
 	}
 
-	private RandomPopProjByGUID(projects:MsvsProj[], targetGUID:string):MsvsProj|undefined{
+	private RandomPopProjByGUID(projects:SlnElem[], targetGUID:string):SlnElem|undefined{
 		// pre check for a empty projects case
 		if(projects.length === 0){
 			return undefined;
@@ -130,7 +140,7 @@ export class SlnFileParser {
 		for(let i=0;i<projects.length;i++){
 			if(projects[i].OwnGUID === targetGUID){
 				// clone found proj and remove original proj in projects array
-				let ret:MsvsProj = projects[i];
+				let ret:SlnElem = projects[i];
 				projects.splice(i,1);
 
 				return ret;
@@ -144,7 +154,7 @@ export class SlnFileParser {
 			}
 		}
 	}
-	private FindByGUID(project:MsvsProj, targetGUID:string):MsvsProj|undefined{		
+	private FindByGUID(project:SlnElem, targetGUID:string):SlnElem|undefined{		
 		if(project.OwnGUID === targetGUID){
 			return project;
 		}
@@ -159,7 +169,7 @@ export class SlnFileParser {
 
 		return undefined;
 	}
-	private AddChildProjByGUID(projects:MsvsProj[], parentGUID:string, childProj:MsvsProj, additionalIdealPath:string):void{
+	private AddChildProjByGUID(projects:SlnElem[], parentGUID:string, childProj:SlnElem, additionalIdealPath:string):void{
 		for(let i=0;i<projects.length;i++){
 			if(projects[i].OwnGUID === parentGUID){
 				let parentProjIndex = i;
@@ -175,11 +185,14 @@ export class SlnFileParser {
 		}
 		return;		
 	}
-	private SetIdealPathRecursively(projects:MsvsProj[],additionalIdealPath:string):void{
+	private SetIdealPathRecursively(projects:SlnElem[],additionalIdealPath:string):void{
 		for(let p of projects){
 			p.idealPath = `${additionalIdealPath}\\${p.idealLabel}`;
 			if(p.HasChildren){
+				p.type = SlnElemType.folder;
 				this.SetIdealPathRecursively(p.children,`${p.idealPath}`);
+			}else{
+				p.type = SlnElemType.proj;
 			}
 		}
 		return;

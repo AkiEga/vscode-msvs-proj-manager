@@ -2,8 +2,15 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
-export class MsvsProj extends vscode.TreeItem {
-	public children:MsvsProj[];
+export enum SlnElemType{
+	sln = 0,
+	proj,
+	folder,
+}
+
+export class SlnElem extends vscode.TreeItem {
+	public type:SlnElemType;
+	public children:SlnElem[];
 	public idealPath:string;
 	constructor(
 		public ParentGUID:string,
