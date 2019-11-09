@@ -6,6 +6,7 @@ import { parentPort } from 'worker_threads';
 
 export class SlnFileParser {
 	public rootMsvsProj: MsvsProj;
+	private isFirstProject:boolean = true;
 	constructor(
 		public tarSlnFilePath: string, 
 		public rootDirPath: string, 
@@ -33,9 +34,10 @@ export class SlnFileParser {
 	}
 	private Parse(lines: string[], lineIndex: number): void {
 		// pre check if index was over 
-		if (lines.length <= lineIndex) {
+		if (lineIndex < 0 || lines.length <= lineIndex) {
 			return;
 		}
+
 		let l = lines[lineIndex];
 		// Project("{<Parent GUID>}") = "<Element Label>", "<Element Real File Path>", "{<Elemnt GUID>}"
 		// EndProject
@@ -48,31 +50,32 @@ export class SlnFileParser {
 		this.Parse(lines, lineIndex + 1);
 	}
 	private ParsedForProj(lines: string[], lineIndex: number): number {
-		let newLineIndex: number = lineIndex;
-		if (lines.length > lineIndex) {
-			let line = lines[lineIndex];
-			let parsedLine: string[] = [];
-			let regExp: RegExp = new RegExp('(Project)|[\(\)\{\}]', 'g');
-			let filtered: string = line.replace(regExp, "");
-			let splited: string[] = filtered.split(/[,=]/g);
-			for (let s of splited) {
-				parsedLine.push(s.trim().replace(/"/g, ''));
-			}
-			this.rootMsvsProj.children.push(new MsvsProj(parsedLine[0], parsedLine[1], parsedLine[2], parsedLine[3], this.rootDirPath));
-			this.outputChannel.appendLine(`[Info] Add Project:"${parsedLine[1]}".`);
-			// search "EndProject"
-			for (let i = lineIndex + 1; i < lines.length; i++) {
-				line = lines[i];
-				if (line.match(/^\s*EndProject$/)) {
-					newLineIndex = i;
-					break;
-				}
+		if (lines.length <= lineIndex) {
+			return;
+		}
+		
+		let matched: string[] = lines[lineIndex].match(/^\s*Project\("{([^{}]*)}"\) = "([^"]*)", "([^"]*)", "{([^{}]*)}"/);
+		let ParentGUID = matched[1];
+		let label = matched[2];		
+		let FilePath = matched[3];
+		let OwnGUID = matched[4];
+
+		if(this.isFirstProject){
+			this.rootMsvsProj.OwnGUID = ParentGUID;
+			this.isFirstProject = false;
+		}
+		this.rootMsvsProj.children.push(new MsvsProj(ParentGUID, label, FilePath, OwnGUID, this.rootDirPath));
+		this.outputChannel.appendLine(`[Info] Add Project:"${matched[1]}".`);
+
+		// search "EndProject" 
+		let i:number;
+		for (i = lineIndex + 1; i < lines.length; i++) {			
+			if (lines[i].match(/^\s*EndProject$/)) {
+				break;
 			}
 		}
-		else {
-			newLineIndex = -1;
-		}
-		return newLineIndex;
+
+		return i;
 	}
 	// private ParsedForGlobal(lines: string[], lineIndex: number): number {
 	// 	let newLineIndex: number = lineIndex;
@@ -84,9 +87,9 @@ export class SlnFileParser {
 		if (lines.length <= lineIndex) {
 			return;
 		}
-		let newLineIndex: number = lineIndex;
-		for (let i = lineIndex + 1; i < lines.length; i++) {
-			let line: string = lines[i];
+		let nextLineIndex: number;
+		for (nextLineIndex = lineIndex + 1; nextLineIndex < lines.length; nextLineIndex++) {
+			let line: string = lines[nextLineIndex];
 			let matched: string[] = line.match(/^\s*{([^{}]*)} = {([^{}]*)}\s*$/);
 			if (matched) {
 				let childProjGUID = matched[1];
@@ -98,17 +101,16 @@ export class SlnFileParser {
 				if(childProj){
 					childProj.idealPath = "";
 					this.AddChildProjByGUID(this.rootMsvsProj.children,parentProjGUID,childProj, "");
-					let parentProj = this.FindByGUID(this.rootMsvsProj.children, parentProjGUID);
+					let parentProj = this.FindByGUID(this.rootMsvsProj, parentProjGUID);
 					this.outputChannel.appendLine(`[Info] Linked Project:"${parentProj.label}(${parentProjGUID})"->"${childProj.label}(${childProjGUID})".`);
 				}
 			}
 			// Detect End Point
 			if (line.match(/^\s*EndGlobalSection$/)) {
-				newLineIndex = i;
 				break;
 			}
 		}
-		return newLineIndex;
+		return nextLineIndex;
 	}
 
 	private RandomPopProjByGUID(projects:MsvsProj[], targetGUID:string):MsvsProj|undefined{
@@ -134,28 +136,19 @@ export class SlnFileParser {
 			}
 		}
 	}
-	private FindByGUID(projects:MsvsProj[], targetGUID:string):MsvsProj|undefined{
-		// pre check for a empty projects case
-		if(projects.length === 0){
-			return undefined;
+	private FindByGUID(project:MsvsProj, targetGUID:string):MsvsProj|undefined{		
+		if(project.OwnGUID === targetGUID){
+			return project;
 		}
 
-		for(let i=0;i<projects.length;i++){
-			if(projects[i].OwnGUID === targetGUID){
-				// clone found proj and return
-				let foundProjIndex =  i;
-				let ret:MsvsProj = projects[foundProjIndex];
-
+		// do same process to children proj recursively			
+		for(let p of project.children){	
+			let ret = this.FindByGUID(p,targetGUID);
+			if(ret){
 				return ret;
 			}
 		}
 
-		// do same process to children proj recursively			
-		for(let p of projects){	
-			if(p.HasChildren){
-				return this.FindByGUID(p.children,targetGUID);
-			}
-		}
 		return undefined;
 	}
 	private AddChildProjByGUID(projects:MsvsProj[], parentGUID:string, childProj:MsvsProj, additionalIdealPath:string):void{

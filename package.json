@@ -3,7 +3,7 @@
 	"displayName": "vscode-msvs-proj-manager",
 	"description": "",
 	"publisher": "akiega",
-	"version": "0.1.14",
+	"version": "0.1.15",
 	"license": "MIT",
 	"repository": {
 		"url": "https://github.com/AkiEga/vscode-msvs-proj-manager"
