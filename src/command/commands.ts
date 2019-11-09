@@ -47,7 +47,7 @@ export default class MsBuildCommander{
 		return async (projNode: MsvsProj) => {
 			// The code you place here will be executed every time your command is executed
 			if (projNode) {
-				this.exeMsBuild("Build",projNode);
+				this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath}`);
 			}
 		};
 	}
@@ -55,19 +55,12 @@ export default class MsBuildCommander{
 		return async (projNode: MsvsProj) => {
 			// The code you place here will be executed every time your command is executed
 			if (projNode) {
-				this.exeMsBuild("Clean",projNode);
+				this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath}:Clean`);
 			}
 		};
 	}
 
-	private exeMsBuild(target: string, targetProj: MsvsProj) {
-		let msbuildArgs:string[] = [
-			this.msbuildPath,
-			this.slnFilePath,
-			`-t:${targetProj.idealPath};${target}`
-		];
-		let msbuildCmd:string 
-			= `"${this.msbuildPath}" "${this.slnFilePath}" -t:${targetProj.idealPath};${target}`;
+	private exeCmd(CmdStr:string) {
 		let exeOption: object = { 
 			encoding: 'Shift_JIS', 
 			// detachment and ignored stdin are the key here: 
@@ -77,10 +70,10 @@ export default class MsBuildCommander{
 
 		// output channel on vscode
 		this.outputChannel.appendLine(
-			`[Info] execute command ""${this.msbuildPath}" ${msbuildArgs.join(" ")}"`);
+			`[Info] execute command "${CmdStr}"`);
 
 		// execute a msBuild command
-		let child = childProccess.exec(msbuildCmd, exeOption);
+		let child = childProccess.exec(CmdStr, exeOption);
 		child.unref();
 		child.stdout.on('data', (data) => {
 			let stdoutUTF8: string = iconv.decode(data, 'Shift_JIS');
