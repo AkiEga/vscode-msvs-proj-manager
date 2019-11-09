@@ -24,7 +24,7 @@ export default class MsBuildCommander{
 	public readSlnFile(tree:vscode.TreeView<MsvsProjProvider>): (...args: any[]) => any{
 		return async () => {
 			if (vscode.workspace.workspaceFolders) {
-				let slnFiles:string[] = fileUtil.listupSlnFile();
+				let slnFiles:string[] = fileUtil.listupSlnFile(true);
 				let selectedSlnFile = "";
 				if (slnFiles.length === 1) {
 					selectedSlnFile = slnFiles[0];

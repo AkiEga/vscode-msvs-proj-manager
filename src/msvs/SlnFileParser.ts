@@ -12,25 +12,33 @@ export class SlnFileParser {
 		public rootDirPath: string, 
 		private outputChannel:vscode.OutputChannel) {
 		this.rootMsvsProj = new MsvsProj('','','','',this.rootDirPath);
-		// .sln read file
-		fs.readFile(this.tarSlnFilePath, 'utf-8', (err, data) => {
-			if(err){
-				this.outputChannel.appendLine(`[Error] Failed reading "${this.tarSlnFilePath}".`);
-			}else{
-				this.outputChannel.appendLine(`[Info] Succeed in reading "${this.tarSlnFilePath}".`);
-			}			
-			let lines: string[] = data.split(/\n|\r\n|\r/g);			
-			this.Parse(lines, 0);
 
-			for(let p of this.rootMsvsProj.children){
-				p.idealPath = p.label;
-				if(p.HasChildren){
-					this.SetIdealPathRecursively(p.children,p.idealPath);
-				}
+		// .sln read file
+		let data:string;
+		try{
+			data = fs.readFileSync(this.tarSlnFilePath, 'utf-8');
+		}catch(err){
+			this.outputChannel.appendLine(`[Error] Failed reading "${this.tarSlnFilePath}".`);
+		}
+		this.outputChannel.appendLine(`[Info] Succeed in reading "${this.tarSlnFilePath}".`);
+		let lines: string[] = data.split(/\n|\r\n|\r/g);			
+
+		// parse sln file
+		this.Parse(lines, 0);
+
+		// apend label to parsed msvs projects
+		for(let p of this.rootMsvsProj.children){
+			p.idealPath = p.label;
+			if(p.HasChildren){
+				this.SetIdealPathRecursively(p.children,p.idealPath);
 			}
-			this.outputChannel.appendLine(`[Info] Detail info of parsed projects:`);
-			this.outputChannel.append(util.inspect(this.rootMsvsProj.children,{showHidden: true, depth: Infinity }));
-		});
+		}
+
+		// debug output
+		this.outputChannel.appendLine(`[Info] Detail info of parsed projects:`);
+		this.outputChannel.append(util.inspect(this.rootMsvsProj.children,{showHidden: true, depth: Infinity }));
+		
+		return;
 	}
 	private Parse(lines: string[], lineIndex: number): void {
 		// pre check if index was over 
