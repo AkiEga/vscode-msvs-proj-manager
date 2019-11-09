@@ -61,15 +61,28 @@ export default class MsBuildCommander{
 	}
 
 	private exeMsBuild(target: string, targetProj: MsvsProj) {
-		let msbuildCmdStr: string = `"${this.msbuildPath}" "${this.slnFilePath}" -t:${targetProj.idealPath};${target}`;
-		let exeOption: object = { encoding: 'Shift_JIS' };
+
+		let msbuildArgs:string[] = [
+			this.slnFilePath,
+			`-t:${targetProj.idealPath}`,
+			`-t:${target}`
+		];
+		let exeOption: object = { 
+			encoding: 'Shift_JIS', 
+			// detachment and ignored stdin are the key here: 
+			detached: true, 
+			stdio: [ 'ignore', 1, 2 ]
+		};
 
 		// output channel on vscode
-		this.outputChannel.appendLine(`[Info] execute command "${msbuildCmdStr}"`);
+		this.outputChannel.appendLine(
+			`[Info] execute command ""${this.msbuildPath}" ${msbuildArgs}"`);
 
 		// execute a msBuild command
-		childProccess.exec(msbuildCmdStr, exeOption, (error, stdout:Buffer, stderr) => {
-			let stdoutUTF8: string = iconv.decode(stdout, 'Shift_JIS');
+		let child = childProccess.execFile(this.msbuildPath, msbuildArgs, exeOption);
+		child.unref();
+		child.stdout.on('data', (data) => {
+			let stdoutUTF8: string = iconv.decode(data, 'Shift_JIS');
 			// let stdoutUTF8 = stdout.toString('Shift_JIS');			
 			this.outputChannel.append(stdoutUTF8);
 			console.log(stdoutUTF8);

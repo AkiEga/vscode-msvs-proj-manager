@@ -26,7 +26,8 @@ export class MsvsProj extends vscode.TreeItem {
 	get description(): string { return this.leafname; }
 	get fullpath():string{ return path.join(this.rootDirPath, this.FilePath); }
 	get projDir():string{ return path.dirname(this.fullpath); }	
-	get idealLeafName():string{ return this.label.replace(/\./g, '_'); }
+	get idealLabel():string{ return this.label.replace(/\./g, '_');}
+	// get idealLeafName():string{ return  this.label.replace(/\./g, '_');}
 
 	public HasChildren():boolean{
 		if(this.children.length >0){

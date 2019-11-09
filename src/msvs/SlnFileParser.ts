@@ -28,7 +28,7 @@ export class SlnFileParser {
 
 		// apend label to parsed msvs projects
 		for(let p of this.rootMsvsProj.children){
-			p.idealPath = p.label;
+			p.idealPath = p.idealLabel;
 			if(p.HasChildren){
 				this.SetIdealPathRecursively(p.children,p.idealPath);
 			}
@@ -177,7 +177,7 @@ export class SlnFileParser {
 	}
 	private SetIdealPathRecursively(projects:MsvsProj[],additionalIdealPath:string):void{
 		for(let p of projects){
-			p.idealPath = `${additionalIdealPath}\\${p.label}`;
+			p.idealPath = `${additionalIdealPath}\\${p.idealLabel}`;
 			if(p.HasChildren){
 				this.SetIdealPathRecursively(p.children,`${p.idealPath}`);
 			}
