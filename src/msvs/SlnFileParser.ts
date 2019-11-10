@@ -1,9 +1,8 @@
 import * as fs from 'fs';
-import { SlnElem, SlnElemType } from './MsvsProj';
+import { SlnElem, MsvsProjBuildConfig } from './MsvsProj';
 import * as vscode from 'vscode';
 import * as util from 'util';
 import * as path from 'path';
-import { parentPort } from 'worker_threads';
 
 export class SlnFileParser {
 	public rootMsvsProj: SlnElem;
@@ -49,8 +48,10 @@ export class SlnFileParser {
 
 		if (lines[lineIndex].match(/^\s*Project.*$/g)) {
 			lineIndex = this.ParsedForProj(lines, lineIndex);
+		}else if (lines[lineIndex].match(/^\s*GlobalSection\(ProjectConfigurationPlatforms\).*$/g)){
+			lineIndex = this.ParsedForBuildConfig(lines, lineIndex);
 		}else if (lines[lineIndex].match(/^\s*GlobalSection\(NestedProjects\).*$/g)) {
-			lineIndex = this.ParsedForGlobalSection(lines, lineIndex);
+			lineIndex = this.ParsedForNestedRelation(lines, lineIndex);
 		}
 		this.Parse(lines, lineIndex + 1);
 	}
@@ -82,12 +83,45 @@ export class SlnFileParser {
 
 		return i;
 	}
-	// private ParsedForGlobal(lines: string[], lineIndex: number): number {
-	// 	let newLineIndex: number = lineIndex;
-		
-	// 	return newLineIndex;
-	// }
-	private ParsedForGlobalSection(lines: string[], lineIndex: number): number {
+	private ParsedForBuildConfig(lines: string[], lineIndex: number): number {
+		let nextLineIndex: number = lineIndex;
+		for (nextLineIndex = lineIndex + 1; nextLineIndex < lines.length; nextLineIndex++) {
+			let line: string = lines[nextLineIndex];			
+
+			let rGUID:string 	= String.raw`([^{}]*)`;
+			let rConfig:string 	= String.raw`(Debug|Release)`;
+			let rPlatform:string = String.raw`([^\.]*)`;
+			let rActive:string = String.raw`(ActiveCfg|Build\.0)`;
+			let rAll:string
+				// = String.raw`^\s*{${rGUID}}.${rConfig}\|${rPlatform}\.${rActive} = .*$`;
+				= String.raw`^\s*{${rGUID}}\.${rConfig}\|${rPlatform}\.${rActive} = ${rConfig}\|${rPlatform}.*$`;
+			// let sAll:string = String.raw`^\s*{${rGUID}}.*$`;
+			// let rAll:RegExp = new RegExp(sAll,'');
+
+			let matched = line.match(new RegExp(rAll));
+			if (matched) {
+				let mGUID:string = matched[1];
+				let mConfig:string 	= matched[2];
+				let mPlatform:string = matched[3];
+				let mActive:string = matched[4];
+
+				let tarProj = this.rootMsvsProj.FindByGUID(mGUID);
+				tarProj.buildConfig.push(
+					{
+						platform:mPlatform,
+						DebugOrRelease:mConfig,
+						activeState:mActive
+					}
+				);
+			}
+			// Detect End Point
+			if (line.match(/^\s*EndGlobalSection$/)) {
+				break;
+			}
+		}
+		return nextLineIndex;
+	}
+	private ParsedForNestedRelation(lines: string[], lineIndex: number): number {
 		// pre check if index was over 
 		if (lines.length <= lineIndex) {
 			return;

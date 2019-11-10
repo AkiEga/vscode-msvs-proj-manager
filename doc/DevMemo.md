@@ -22,6 +22,8 @@
 	- [ ] add demo.gif to Readme.md 
 
 # Dev memo
+## Design
+
 ## solution explorer in visual studio 20xx
 ```c++
 <root>

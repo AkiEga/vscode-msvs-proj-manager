@@ -7,11 +7,17 @@ export enum SlnElemType{
 	proj,
 	folder,
 }
+export interface MsvsProjBuildConfig {
+	platform:string;
+	DebugOrRelease:string;
+	activeState:string;
+}
 
 export class SlnElem extends vscode.TreeItem {
 	public type:SlnElemType;
 	public children:SlnElem[];
 	public idealPath:string;
+	public buildConfig:MsvsProjBuildConfig[];
 	constructor(
 		public ParentGUID:string,
 		public label:string,
@@ -33,6 +39,7 @@ export class SlnElem extends vscode.TreeItem {
 			}
 		}
 		this.children = [];
+		this.buildConfig = [];
 	}
 	get leafname(): string {
 		return path.basename(this.FilePath);
