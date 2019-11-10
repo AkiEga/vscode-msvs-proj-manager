@@ -16,9 +16,7 @@ export class SlnFileParser {
 
 		// set root msvs proj (.sln file)
 		this.rootMsvsProj = new SlnElem('',tarSlnFileBasename,tarSlnFileBasename,'',this.rootDirPath);
-		this.rootMsvsProj.type = SlnElemType.sln;
 		this.rootMsvsProj.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-		
 
 		// .sln read file
 		let data:string;
@@ -35,15 +33,7 @@ export class SlnFileParser {
 		this.Parse(lines, 0);
 
 		// apend label to parsed msvs projects
-		for(let p of this.rootMsvsProj.children){
-			p.idealPath = p.idealLabel;			
-			if(p.HasChildren){
-				p.type = SlnElemType.folder;
-				this.SetIdealPathRecursively(p.children,p.idealPath);
-			}else{
-				p.type = SlnElemType.proj;
-			}
-		}
+		this.rootMsvsProj.SetIdealPath("");
 
 		// debug output
 		this.outputChannel.appendLine(`[Info] Detail info of parsed projects:`);
@@ -57,13 +47,9 @@ export class SlnFileParser {
 			return;
 		}
 
-		let l = lines[lineIndex];
-		// Project("{<Parent GUID>}") = "<Element Label>", "<Element Real File Path>", "{<Elemnt GUID>}"
-		// EndProject
-		if (l.match(/^\s*Project.*$/g)) {
+		if (lines[lineIndex].match(/^\s*Project.*$/g)) {
 			lineIndex = this.ParsedForProj(lines, lineIndex);
-		}
-		else if (l.match(/^\s*GlobalSection\(NestedProjects\).*$/g)) {
+		}else if (lines[lineIndex].match(/^\s*GlobalSection\(NestedProjects\).*$/g)) {
 			lineIndex = this.ParsedForGlobalSection(lines, lineIndex);
 		}
 		this.Parse(lines, lineIndex + 1);
@@ -116,11 +102,11 @@ export class SlnFileParser {
 
 				// pop child proj
 				let childProj:SlnElem
-					 = this.RandomPopProjByGUID(this.rootMsvsProj.children,childProjGUID);
+					 = this.rootMsvsProj.PopProjByGUID(childProjGUID);
 				if(childProj){
 					childProj.idealPath = "";
-					this.AddChildProjByGUID(this.rootMsvsProj.children,parentProjGUID,childProj, "");
-					let parentProj = this.FindByGUID(this.rootMsvsProj, parentProjGUID);
+					this.rootMsvsProj.AddChildProjByGUID(parentProjGUID,childProj);
+					let parentProj = this.rootMsvsProj.FindByGUID(parentProjGUID);
 					this.outputChannel.appendLine(`[Info] Linked Project:"${parentProj.label}(${parentProjGUID})"->"${childProj.label}(${childProjGUID})".`);
 				}
 			}
@@ -130,72 +116,5 @@ export class SlnFileParser {
 			}
 		}
 		return nextLineIndex;
-	}
-
-	private RandomPopProjByGUID(projects:SlnElem[], targetGUID:string):SlnElem|undefined{
-		// pre check for a empty projects case
-		if(projects.length === 0){
-			return undefined;
-		}
-		
-		for(let i=0;i<projects.length;i++){
-			if(projects[i].OwnGUID === targetGUID){
-				// clone found proj and remove original proj in projects array
-				let ret:SlnElem = projects[i];
-				projects.splice(i,1);
-
-				return ret;
-			}
-		}
-		// do same process to children proj recursively	
-		for(let p of projects){
-			// do same process to children proj recursively
-			if(p.HasChildren){
-				return this.RandomPopProjByGUID(p.children,targetGUID);
-			}
-		}
-	}
-	private FindByGUID(project:SlnElem, targetGUID:string):SlnElem|undefined{		
-		if(project.OwnGUID === targetGUID){
-			return project;
-		}
-
-		// do same process to children proj recursively			
-		for(let p of project.children){	
-			let ret = this.FindByGUID(p,targetGUID);
-			if(ret){
-				return ret;
-			}
-		}
-
-		return undefined;
-	}
-	private AddChildProjByGUID(projects:SlnElem[], parentGUID:string, childProj:SlnElem, additionalIdealPath:string):void{
-		for(let i=0;i<projects.length;i++){
-			if(projects[i].OwnGUID === parentGUID){
-				let parentProjIndex = i;
-				projects[parentProjIndex].children.push(childProj);
-			}
-		}
-			
-		// do same process to children proj recursively
-		for(let p of projects){
-			if(p.HasChildren){
-				this.AddChildProjByGUID(p.children,parentGUID,childProj,additionalIdealPath);
-			}
-		}
-		return;		
-	}
-	private SetIdealPathRecursively(projects:SlnElem[],additionalIdealPath:string):void{
-		for(let p of projects){
-			p.idealPath = `${additionalIdealPath}\\${p.idealLabel}`;
-			if(p.HasChildren){
-				p.type = SlnElemType.folder;
-				this.SetIdealPathRecursively(p.children,`${p.idealPath}`);
-			}else{
-				p.type = SlnElemType.proj;
-			}
-		}
-		return;
 	}
 }
