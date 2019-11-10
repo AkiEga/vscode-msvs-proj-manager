@@ -26,6 +26,7 @@ export class SlnFileParser {
 			data = fs.readFileSync(this.tarSlnFilePath, 'utf-8');
 		}catch(err){
 			this.outputChannel.appendLine(`[Error] Failed reading "${this.tarSlnFilePath}".`);
+			this.outputChannel.appendLine(err);
 		}
 		this.outputChannel.appendLine(`[Info] Succeed in reading "${this.tarSlnFilePath}".`);
 		let lines: string[] = data.split(/\n|\r\n|\r/g);			
