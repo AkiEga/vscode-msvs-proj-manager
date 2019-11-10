@@ -46,9 +46,18 @@ export default class MsBuildCommander{
 		return async (projNode: SlnElem) => {
 			// The code you place here will be executed every time your command is executed
 			if(projNode.type === SlnElemType.proj){
-				this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath}`);
+				if(projNode.buildConfig.length > 0){
+					let list:string[] = [];
+					for(let bc of projNode.buildConfig){											
+						list.push(`Configration=${bc.DebugOrRelease};Platform="${bc.platform}"`);
+					}
+					let ret = await vscode.window.showQuickPick(list);
+					this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath} -p:${ret}`);
+				}else{
+					this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath}`);
+				}
 			}else if(projNode.type === SlnElemType.sln){
-					this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}"`);
+				this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}"`);
 			}
 		};
 	}

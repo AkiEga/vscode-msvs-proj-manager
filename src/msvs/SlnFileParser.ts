@@ -93,10 +93,7 @@ export class SlnFileParser {
 			let rPlatform:string = String.raw`([^\.]*)`;
 			let rActive:string = String.raw`(ActiveCfg|Build\.0)`;
 			let rAll:string
-				// = String.raw`^\s*{${rGUID}}.${rConfig}\|${rPlatform}\.${rActive} = .*$`;
 				= String.raw`^\s*{${rGUID}}\.${rConfig}\|${rPlatform}\.${rActive} = ${rConfig}\|${rPlatform}.*$`;
-			// let sAll:string = String.raw`^\s*{${rGUID}}.*$`;
-			// let rAll:RegExp = new RegExp(sAll,'');
 
 			let matched = line.match(new RegExp(rAll));
 			if (matched) {
@@ -105,8 +102,7 @@ export class SlnFileParser {
 				let mPlatform:string = matched[3];
 				let mActive:string = matched[4];
 
-				let tarProj = this.rootMsvsProj.FindByGUID(mGUID);
-				tarProj.buildConfig.push(
+				this.rootMsvsProj.FindByGUID(mGUID).AddBuildConfig(
 					{
 						platform:mPlatform,
 						DebugOrRelease:mConfig,

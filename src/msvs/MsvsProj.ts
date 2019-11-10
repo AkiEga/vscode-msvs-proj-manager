@@ -1,3 +1,4 @@
+import { MsvsProjBuildConfig } from './MsvsProj';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
@@ -131,5 +132,12 @@ export class SlnElem extends vscode.TreeItem {
 			});	
 		}
 		return;
+	}
+
+	public AddBuildConfig(buildConfig:MsvsProjBuildConfig):void{
+		this.buildConfig.push(buildConfig);
+
+		// sort build configures
+		// T.B.D
 	}
 }
