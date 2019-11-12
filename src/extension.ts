@@ -4,6 +4,9 @@ import * as vscode from 'vscode';
 import MsvsProjProvider from './msvs/MsvsProjProvider';
 import MsBuildCommander from './command/commands';
 import * as fileUtil from './util/fileUtil';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import * as fs from 'fs';
 
 ///////////////////////////////////////////////////////////////////////////////
 // For extension events
@@ -35,9 +38,22 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
+	// set additional environment variables with ${workspaceDir}/.vscode/.env
+	let dotenvFilePath = path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, ".vscode/.env");
+	const envConfig = dotenv.parse(fs.readFileSync(dotenvFilePath));
+	for (const k in envConfig) {
+		if(process.env[k]){
+			process.env[k] = process.env[k] + ";" + envConfig[k];
+		}else{
+			process.env[k] = envConfig[k];
+		}
+	}
+
+	// make a treeview of solution explorer 
 	let mpp = new MsvsProjProvider(slnFilePath, outputChannel);
 	let tree:vscode.TreeView<MsvsProjProvider> = vscode.window.createTreeView("slnExplorer", { treeDataProvider: mpp });
 
+	// set vscode commands
 	let cmd = new MsBuildCommander(msbuildPath,slnFilePath, outputChannel);
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.read-sln-file', 
@@ -47,7 +63,10 @@ export function activate(context: vscode.ExtensionContext) {
 		cmd.openTerminalNearbyMsvsProj());
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.build-msvs-proj', 
-		cmd.buildMsvsProj());
+		cmd.buildMsvsProj(false));
+	vscode.commands.registerCommand(
+		'vscode-msvs-proj-manager.build-msvs-proj-with-active-config', 
+		cmd.buildMsvsProj(true));
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.clean-msvs-proj', 
 		cmd.cleanMsvsProj());

@@ -42,17 +42,25 @@ export default class MsBuildCommander{
 		};
 	}
 	
-	public buildMsvsProj(): (...args: any[]) => any {
+	public buildMsvsProj(autoSelectActiveBuildConfig:boolean): (...args: any[]) => any {
 		return async (projNode: SlnElem) => {
 			// The code you place here will be executed every time your command is executed
 			if(projNode.type === SlnElemType.proj){
 				if(projNode.buildConfig.length > 0){
-					let list:string[] = [];
-					for(let bc of projNode.buildConfig){											
-						list.push(`Configration=${bc.DebugOrRelease};Platform="${bc.platform}"`);
+					let msbuildOption:string = "";
+					if(autoSelectActiveBuildConfig===false){
+						let list:string[] = [];
+						for(let bc of projNode.buildConfig){											
+							list.push(`Configration=${bc.DebugOrRelease};Platform="${bc.platform}"`);
+						}
+						let ret = await vscode.window.showQuickPick(list);
+						msbuildOption = `"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath} -p:${ret}`;
+					}else{
+						msbuildOption = `"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath}`;
 					}
-					let ret = await vscode.window.showQuickPick(list);
-					this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath} -p:${ret}`);
+
+					this.exeCmd(msbuildOption);
+				
 				}else{
 					this.exeCmd(`"${this.msbuildPath}" "${this.slnFilePath}" -t:${projNode.idealPath}`);
 				}

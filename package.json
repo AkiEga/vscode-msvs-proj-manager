@@ -22,31 +22,39 @@
 		"commands": [
 			{
 				"command": "vscode-msvs-proj-manager.read-sln-file",
-				"title": "read sln file"
+				"title": "Read a msvs solution file(.sln)"
 			},
 			{
 				"command": "vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj",
-				"title": "open terminal nearby msvs proj"
+				"title": "Open terminal nearby the msvs project"
+			},
+			{
+				"command": "vscode-msvs-proj-manager.build-msvs-proj-with-active-config",
+				"title": "Build a msvs project (auto config)"
 			},
 			{
 				"command": "vscode-msvs-proj-manager.build-msvs-proj",
-				"title": "build msvs proj"
+				"title": "Build a msvs project (manual config)"
 			},
 			{
 				"command": "vscode-msvs-proj-manager.clean-msvs-proj",
-				"title": "clean msvs proj"
+				"title": "Clean a msvs project"
 			}
 		],
 		"views": {
 			"explorer": [
 				{
 					"id": "slnExplorer",
-					"name": "sln explorer"
+					"name": "msvs solution explorer"
 				}
 			]
 		},
 		"menus": {
 			"view/item/context": [
+				{
+					"command": "vscode-msvs-proj-manager.build-msvs-proj-with-active-config",
+					"when": "view == slnExplorer"
+				},
 				{
 					"command": "vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj",
 					"when": "view == slnExplorer"
@@ -83,6 +91,7 @@
 		"webpack-cli": "^3.3.10"
 	},
 	"dependencies": {
+		"dotenv": "^8.2.0",
 		"iconv-lite": "^0.5.0"
 	}
 }

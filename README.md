@@ -22,14 +22,14 @@ For example:
 }
 ```
 
-## Known Issues
-Calling out known issues can help limit users opening duplicate issues against your extension.
+And you can set temporary environment variables(e.g. PATH) in `${workspaceDir}/.vscode/.env`.  
+```shell
+# comment
+PATH="c:\work"
+HOGE=FUGA
+```
 
-## Release Notes
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-Initial release of ...
+Ref) [.env file rules](https://github.com/motdotla/dotenv#rules)
 
 ### For more information
 
