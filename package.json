@@ -74,6 +74,7 @@
 		"vscode:prepublish": "webpack --mode production",
 		"webpack": "webpack --mode development",
 		"webpack-dev": "webpack --mode development --watch",
+		"publish": "powershell -Command {vsce publish patch -p $(cat ./PublishAccessToken.txt) --yarn}",
 		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
