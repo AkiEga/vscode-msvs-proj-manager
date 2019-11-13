@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import MsvsProjProvider from './msvs/MsvsProjProvider';
 import MsBuildCommander from './command/commands';
 import * as fileUtil from './util/fileUtil';
-import * as dotenv from 'dotenv';
+
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -29,25 +29,17 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// auto detecting msbuild.exe
 	if(!msbuildPath){
-		let ret:string|undefined = fileUtil.searchFileInEnvValPath(/.*msbuild.exe/i);
-		if(ret === undefined){
+		let ret:string[] = fileUtil.searchFileInEnvValPath(/.*msbuild.exe$/i);
+		if(ret.length === 0){
 			outputChannel.appendLine(`[Warning] "msbuild.exe" is not found! This extension can't use this command.`);
 		}else{
-			msbuildPath = ret;
+			msbuildPath = ret[0];
 			outputChannel.appendLine(`[Info] "msbuild.exe" is detected automatically(${msbuildPath})! This extension can't use this command.`);
 		}
 	}
 
 	// set additional environment variables with ${workspaceDir}/.vscode/.env
-	let dotenvFilePath = path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, ".vscode/.env");
-	const envConfig = dotenv.parse(fs.readFileSync(dotenvFilePath));
-	for (const k in envConfig) {
-		if(process.env[k]){
-			process.env[k] = process.env[k] + ";" + envConfig[k];
-		}else{
-			process.env[k] = envConfig[k];
-		}
-	}
+	fileUtil.pathSettingWithDotEnvfile();
 
 	// make a treeview of solution explorer 
 	let mpp = new MsvsProjProvider(slnFilePath, outputChannel);

@@ -1,24 +1,24 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as process from 'process';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
 
 ///////////////////////////////////////////////////////////////////////////////
 // For utility
 ///////////////////////////////////////////////////////////////////////////////
-export function searchFileInEnvValPath(pattern:RegExp):string|undefined{
+export function searchFileInEnvValPath(pattern:RegExp):string[]{
 	let pathEnvVal:string[] = process.env.path.split(";");
-
+	let filesInPath:string[] = [];
 	for(let p of pathEnvVal){
-		let filesInPath = readdirNotRecursively(p);
-		for(let f of filesInPath){
-			let str:string =f;
-			if(str.match(pattern)){				
-				return str.replace(/\\/g, "/");
+		for(let f of readdirNotRecursively(p)){
+			if(f.match(pattern)){				
+				filesInPath.push(f);
 			}
 		}
 	}
 
-	return undefined;
+	return filesInPath;
 }
 
 function readdirRecursively(dir: string): any {
@@ -33,13 +33,11 @@ function readdirRecursively(dir: string): any {
 }
 function readdirNotRecursively(dir: string): any {
 	let files:string[] = [];
-	const paths: string[] = fs.readdirSync(dir);
+	const paths: fs.Dirent[] = fs.readdirSync(dir, {withFileTypes: true});
 	
-	for (const path of paths) {
-		const stats = fs.statSync(`${dir}/${path}`);
-		let fullPath = `${dir}/${path}`.replace(/\\/g, "/");
-		if (stats.isDirectory() === false) {
-			files.push(fullPath);
+	for (const p of paths) {
+		if (p.isDirectory() === false) {
+			files.push(path.join(dir,p.name).replace(/\\/g,'/'));
 		}
 	}
 	
@@ -69,4 +67,25 @@ export function listupSlnFile(recursively:boolean): string[] {
 	else {
 		return [];
 	}
+}
+export function pathSettingWithDotEnvfile():void{
+	let dotenvFilePath = path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, ".vscode/.env");
+
+	// check .env file exists
+	try{
+		fs.statSync(dotenvFilePath);
+	}catch(err){
+		if(err.code === 'ENOENT'){
+			return;
+		}
+	}
+	const envConfig = dotenv.parse(fs.readFileSync(dotenvFilePath));
+	for (const k in envConfig) {
+		if(process.env[k]){
+			process.env[k] = process.env[k] + ";" + envConfig[k];
+		}else{
+			process.env[k] = envConfig[k];
+		}
+	}
+	return;
 }

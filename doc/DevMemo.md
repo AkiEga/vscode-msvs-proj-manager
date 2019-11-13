@@ -3,7 +3,9 @@
 	- auto detecting
 		- [x] sln file
 		- [x] msbuild.exe
-		- [x] build setting(e.g. x86 or x64, Debug or Release...)
+		- [x] msvs proj build setting(e.g. x86 or x64, Debug or Release...)
+		- [ ] msvs sln build setting(e.g. x86 or x64, Debug or Release...)
+		
 	- environment variables
 		- [x] enable to set environment variables(e.g. PATH) from ${workspaceFolder}/.vscode/.env
 
