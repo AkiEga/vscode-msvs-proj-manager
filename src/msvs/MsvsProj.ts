@@ -1,4 +1,4 @@
-import { MsvsProjBuildConfig } from './MsvsProj';
+import { MsvsProjBuildConfig } from './MsvsProjBuildConfig';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
@@ -7,11 +7,6 @@ export enum SlnElemType{
 	sln = 0,
 	proj,
 	folder,
-}
-export interface MsvsProjBuildConfig {
-	platform:string;
-	DebugOrRelease:string;
-	activeState:string;
 }
 
 export class SlnElem extends vscode.TreeItem {

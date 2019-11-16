@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { SlnElem, MsvsProjBuildConfig } from './MsvsProj';
+import { SlnElem } from './MsvsProj';
 import * as vscode from 'vscode';
 import * as util from 'util';
 import * as path from 'path';

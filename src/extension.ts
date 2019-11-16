@@ -29,7 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// auto detecting msbuild.exe
 	if(!msbuildPath){
-		let ret:string[] = fileUtil.searchFileInEnvValPath(/.*msbuild.exe$/i);
+		let ret:string[] = fileUtil.searchFileInEnvValPath(/.*msbuild\.exe$/i);
 		if(ret.length === 0){
 			outputChannel.appendLine(`[Warning] "msbuild.exe" is not found! This extension can't use this command.`);
 		}else{
