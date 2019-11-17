@@ -49,8 +49,8 @@ export class SlnFileParser {
 
 		if (lines[lineIndex].match(/^\s*Project.*$/g)) {
 			lineIndex = this.ParsedForProj(lines, lineIndex);
-		// }else if (lines[lineIndex].match(/^\s*GlobalSection\(SolutionConfigurationPlatforms\).*$/g)){
-		// 	lineIndex = this.ParsedForSlnBuildConfig(lines, lineIndex);
+		}else if (lines[lineIndex].match(/^\s*GlobalSection\(SolutionConfigurationPlatforms\).*$/g)){
+			lineIndex = this.ParsedForSlnBuildConfig(lines, lineIndex);
 		}else if (lines[lineIndex].match(/^\s*GlobalSection\(ProjectConfigurationPlatforms\).*$/g)){
 			lineIndex = this.ParsedForMsvsProjBuildConfig(lines, lineIndex);
 		}else if (lines[lineIndex].match(/^\s*GlobalSection\(NestedProjects\).*$/g)) {
@@ -96,13 +96,14 @@ export class SlnFileParser {
 			let rAll: string = String.raw`^\s*${rConfig}\|${rPlatform} = ${rConfig}\|${rPlatform}.*$`;
 			let matched = line.match(new RegExp(rAll));
 			
-			this.rootMsvsProj.AddBuildConfig({
-				GUID:this.rootMsvsProj.OwnGUID,
-				platform: matched[2],
-				DebugOrRelease: matched[1],
-				activeState: undefined
-			});
-
+			if(matched){
+				this.rootMsvsProj.AddBuildConfig({
+					GUID:this.rootMsvsProj.OwnGUID,
+					platform: matched[2],
+					DebugOrRelease: matched[1],
+					activeState: undefined
+				});
+			}
 			// Detect End Point
 			if (line.match(/^\s*EndGlobalSection$/)) {
 				break;
