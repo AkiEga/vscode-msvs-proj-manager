@@ -7,6 +7,24 @@ import * as dotenv from 'dotenv';
 ///////////////////////////////////////////////////////////////////////////////
 // For utility
 ///////////////////////////////////////////////////////////////////////////////
+export function ResolveFullPath(pathStr:string):string{
+	// pre check in a case that pathStr is undefined case.
+	if(pathStr===undefined){
+		return undefined;
+	}
+
+	let workspaceDir:string = vscode.workspace.workspaceFolders[0].uri.fsPath;	
+	if(path.isAbsolute(pathStr)){
+		// full path case
+		return pathStr;
+	}else if(pathStr.match(/^\$\{workspaceDir\}.*$/)){
+		// using ${workspaceDir} symbol case
+		return path.join(workspaceDir, pathStr.replace("${workspaceDir}",""));
+	}else {
+		// relative path case
+		return path.join(workspaceDir, ".vscode", pathStr);
+	}
+}
 export function searchFileInEnvValPath(pattern:RegExp):string[]{
 	let pathEnvVal:string[] = process.env.path.split(";");
 	let filesInPath:string[] = [];

@@ -16,8 +16,10 @@ For example:
 ```json
 {
 	"vscode-msvs-proj-manager": {
-		"default-sln-file-path": "C:/work/hoge/fuga.sln",
-		"msbuild-file-path": "C:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe"
+		"default-sln-file-path": "C:/work/hoge/fuga.sln",		// full path case
+		// "default-sln-file-path": "${workspaceDir}/fuga.sln",	// using ${workspaceDir} symbol case
+		// "default-sln-file-path": "../fuga.sln",	 			// relative path case (from ${workspaceDir}/.vscode)
+		"msbuild-file-path": "C:/Program Files (x86)/MSBuild/12.0/Bin/MSBuild.exe"
 	}
 }
 ```

@@ -15,8 +15,8 @@ export function activate(context: vscode.ExtensionContext) {
 	let outputChannel = vscode.window.createOutputChannel("vscode-msvs-proj-manager");
 
 	let slnFilePath:string 
-		= vscode.workspace.getConfiguration('vscode-msvs-proj-manager')
-			.get<string>('default-sln-file-path');
+		= fileUtil.ResolveFullPath(vscode.workspace.getConfiguration('vscode-msvs-proj-manager')
+			.get<string>('default-sln-file-path'));
 
 	// auto detecting sln file
 	if(!slnFilePath){
