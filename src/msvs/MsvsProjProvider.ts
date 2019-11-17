@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { SlnElem } from './MsvsProj';
+import { SlnElem } from './SlnElem';
 import { SlnFileParser } from "./SlnFileParser";
 
 export default class MsvsProjProvider implements vscode.TreeDataProvider<SlnElem> {

@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { SlnElem } from './MsvsProj';
+import { SlnElem } from './SlnElem';
 import * as vscode from 'vscode';
 import * as util from 'util';
 import * as path from 'path';

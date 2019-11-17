@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as childProccess from 'child_process';
 
-import { SlnElem, SlnElemType} from '../msvs/MsvsProj';
+import { SlnElem, SlnElemType} from '../msvs/SlnElem';
 import MsvsProjProvider from '../msvs/MsvsProjProvider';
 import * as fileUtil from '../util/fileUtil';
 import * as iconv from 'iconv-lite';
