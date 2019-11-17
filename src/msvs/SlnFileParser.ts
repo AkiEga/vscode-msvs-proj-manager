@@ -3,6 +3,7 @@ import { SlnElem } from './SlnElem';
 import * as vscode from 'vscode';
 import * as util from 'util';
 import * as path from 'path';
+import { MsvsProjBuildConfig } from './MsvsProjBuildConfig';
 
 export class SlnFileParser {
 	public rootMsvsProj: SlnElem;
@@ -48,8 +49,10 @@ export class SlnFileParser {
 
 		if (lines[lineIndex].match(/^\s*Project.*$/g)) {
 			lineIndex = this.ParsedForProj(lines, lineIndex);
+		// }else if (lines[lineIndex].match(/^\s*GlobalSection\(SolutionConfigurationPlatforms\).*$/g)){
+		// 	lineIndex = this.ParsedForSlnBuildConfig(lines, lineIndex);
 		}else if (lines[lineIndex].match(/^\s*GlobalSection\(ProjectConfigurationPlatforms\).*$/g)){
-			lineIndex = this.ParsedForBuildConfig(lines, lineIndex);
+			lineIndex = this.ParsedForMsvsProjBuildConfig(lines, lineIndex);
 		}else if (lines[lineIndex].match(/^\s*GlobalSection\(NestedProjects\).*$/g)) {
 			lineIndex = this.ParsedForNestedRelation(lines, lineIndex);
 		}
@@ -83,33 +86,23 @@ export class SlnFileParser {
 
 		return i;
 	}
-	private ParsedForBuildConfig(lines: string[], lineIndex: number): number {
+	private ParsedForSlnBuildConfig(lines: string[], lineIndex: number): number {
 		let nextLineIndex: number = lineIndex;
 		for (nextLineIndex = lineIndex + 1; nextLineIndex < lines.length; nextLineIndex++) {
 			let line: string = lines[nextLineIndex];			
 
-			let rGUID:string 	= String.raw`([^{}]*)`;
-			let rConfig:string 	= String.raw`(Debug|Release)`;
-			let rPlatform:string = String.raw`([^\.]*)`;
-			let rActive:string = String.raw`(ActiveCfg|Build\.0)`;
-			let rAll:string
-				= String.raw`^\s*{${rGUID}}\.${rConfig}\|${rPlatform}\.${rActive} = ${rConfig}\|${rPlatform}.*$`;
-
+			let rConfig: string = String.raw`(Debug|Release)`;
+			let rPlatform: string = String.raw`([^\.]*)`;
+			let rAll: string = String.raw`^\s*${rConfig}\|${rPlatform} = ${rConfig}\|${rPlatform}.*$`;
 			let matched = line.match(new RegExp(rAll));
-			if (matched) {
-				let mGUID:string = matched[1];
-				let mConfig:string 	= matched[2];
-				let mPlatform:string = matched[3];
-				let mActive:string = matched[4];
+			
+			this.rootMsvsProj.AddBuildConfig({
+				GUID:this.rootMsvsProj.OwnGUID,
+				platform: matched[2],
+				DebugOrRelease: matched[1],
+				activeState: undefined
+			});
 
-				this.rootMsvsProj.FindByGUID(mGUID).AddBuildConfig(
-					{
-						platform:mPlatform,
-						DebugOrRelease:mConfig,
-						activeState:mActive
-					}
-				);
-			}
 			// Detect End Point
 			if (line.match(/^\s*EndGlobalSection$/)) {
 				break;
@@ -117,6 +110,48 @@ export class SlnFileParser {
 		}
 		return nextLineIndex;
 	}
+	private ParsedForMsvsProjBuildConfig(lines: string[], lineIndex: number): number {
+		let nextLineIndex: number = lineIndex;
+		for (nextLineIndex = lineIndex + 1; nextLineIndex < lines.length; nextLineIndex++) {
+			let line: string = lines[nextLineIndex];			
+
+			let buildConfig:MsvsProjBuildConfig = this.ParseBuildConfigFromLine(line);
+			if(buildConfig)	{
+				this.rootMsvsProj.FindByGUID(buildConfig.GUID).AddBuildConfig(buildConfig);
+			}
+
+			// Detect End Point
+			if (line.match(/^\s*EndGlobalSection$/)) {
+				break;
+			}
+		}
+		return nextLineIndex;
+	}
+	private ParseBuildConfigFromLine(line: string) {
+		let rGUID: string = String.raw`([^{}]*)`;
+		let rConfig: string = String.raw`(Debug|Release)`;
+		let rPlatform: string = String.raw`([^\.]*)`;
+		let rActive: string = String.raw`(ActiveCfg|Build\.0)`;
+		let rAll: string = String.raw`^\s*{${rGUID}}\.${rConfig}\|${rPlatform}\.${rActive} = ${rConfig}\|${rPlatform}.*$`;
+		let matched = line.match(new RegExp(rAll));
+
+		let ret:MsvsProjBuildConfig;
+		if (matched) {
+			let mGUID:string = matched[1];
+			let mConfig:string 	= matched[2];
+			let mPlatform:string = matched[3];
+			let mActive:string = matched[4];
+			ret = {
+				GUID: mGUID,
+				platform:mPlatform,
+				DebugOrRelease:mConfig,
+				activeState:mActive
+			};
+		}
+
+		return ret;
+	}
+
 	private ParsedForNestedRelation(lines: string[], lineIndex: number): number {
 		// pre check if index was over 
 		if (lines.length <= lineIndex) {

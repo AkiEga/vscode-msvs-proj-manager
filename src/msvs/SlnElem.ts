@@ -129,8 +129,16 @@ export class SlnElem extends vscode.TreeItem {
 		return;
 	}
 
-	public AddBuildConfig(buildConfig:MsvsProjBuildConfig):void{
-		this.buildConfig.push(buildConfig);
+	public AddBuildConfig(newBuildConfig:MsvsProjBuildConfig):void{
+		for(let bc of this.buildConfig){
+			// avoid to push duplicated element
+			if(	bc.platform === newBuildConfig.platform &&
+				bc.DebugOrRelease === newBuildConfig.DebugOrRelease 
+				){
+				return;
+			}
+		}
+		this.buildConfig.push(newBuildConfig);
 
 		// sort build configures
 		// T.B.D
