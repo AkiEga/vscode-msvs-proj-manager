@@ -66,6 +66,31 @@ export default class MsBuildCommander{
 			this.exeCmd(msbuildCmdStr);
 		};
 	}
+	public buildCurrentMsvsProj(autoSelectActiveBuildConfig:boolean, projNode:SlnElem): void {
+		// set msbuild cmd base string			
+		let msbuildCmdStr:string = `"${this.msbuildPath}" "${this.slnFilePath}"`;
+
+		// (if need) select msvs proj
+		if(projNode.type === SlnElemType.proj){
+			msbuildCmdStr +=  ` -t:${projNode.idealPath}`;
+		}
+
+		// (if need) select build config
+		if(projNode.buildConfig.length > 0 && autoSelectActiveBuildConfig===false){
+			let list:string[] = [];
+			for(let bc of projNode.buildConfig){											
+				list.push(`Configration=${bc.DebugOrRelease};Platform="${bc.platform}"`);
+			}
+			vscode.window.showQuickPick(list).then((selectedBuildConfig )=>{
+				msbuildCmdStr +=  ` -p:${selectedBuildConfig}`;
+				// execute msbuild cmd
+				this.exeCmd(msbuildCmdStr);
+			});
+		}else{
+			// execute msbuild cmd
+			this.exeCmd(msbuildCmdStr);
+		}
+	}
 	public cleanMsvsProj(): (...args: any[]) => any {
 		return async (projNode: SlnElem) => {
 			// The code you place here will be executed every time your command is executed

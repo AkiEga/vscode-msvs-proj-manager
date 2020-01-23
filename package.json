@@ -37,6 +37,10 @@
 				"title": "🔨Build a msvs project (manual config)"
 			},
 			{
+				"command": "vscode-msvs-proj-manager.build-current-msvs-proj",
+				"title": "🔨Build a msvs currnet project (manual config)"
+			},
+			{
 				"command": "vscode-msvs-proj-manager.clean-msvs-proj",
 				"title": "🧹Clean a msvs project"
 			}

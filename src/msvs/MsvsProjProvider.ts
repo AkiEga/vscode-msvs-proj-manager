@@ -6,7 +6,13 @@ import { SlnFileParser } from "./SlnFileParser";
 export default class MsvsProjProvider implements vscode.TreeDataProvider<SlnElem> {
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
-	private sfp:SlnFileParser;
+	private _sfp: SlnFileParser;
+	public get sfp(): SlnFileParser {
+		return this._sfp;
+	}
+	public set sfp(value: SlnFileParser) {
+		this._sfp = value;
+	}
 
 	constructor(private readonly _tarSlnFilePath:string,  private outputChannel:vscode.OutputChannel) { 
 		let rootDirPath = path.dirname(_tarSlnFilePath);

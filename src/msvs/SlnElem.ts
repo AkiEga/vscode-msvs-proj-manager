@@ -143,4 +143,21 @@ export class SlnElem extends vscode.TreeItem {
 		// sort build configures
 		// T.B.D
 	}
+	public FindNearestElem(currentFocusedFilePath:string):SlnElem|undefined{
+		let relativePath:string = path.relative(this.projDir, currentFocusedFilePath);
+		if( (this.type === SlnElemType.proj) &&
+			(relativePath.match(/^[^\.].*/) !== null)){
+			return this;
+		}
+
+		// do same process to children proj recursively			
+		for(let childProj of this.children){	
+			let childProjResult = childProj.FindNearestElem(currentFocusedFilePath);
+			if(childProjResult){
+				return childProjResult;
+			}
+		}
+
+		return undefined;
+	}
 }

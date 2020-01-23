@@ -7,6 +7,7 @@ import * as fileUtil from './util/fileUtil';
 
 import * as path from 'path';
 import * as fs from 'fs';
+import { SlnElem } from './msvs/SlnElem';
 
 ///////////////////////////////////////////////////////////////////////////////
 // For extension events
@@ -53,12 +54,26 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.open-terminal-nearby-msvs-proj', 
 		cmd.openTerminalNearbyMsvsProj());
+
+	// build 
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.build-msvs-proj', 
 		cmd.buildMsvsProj(false));
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.build-msvs-proj-with-active-config', 
 		cmd.buildMsvsProj(true));
+	vscode.commands.registerCommand(
+		'vscode-msvs-proj-manager.build-current-msvs-proj', 
+		()=>{
+			// get projNode as current msvs proj
+			let currentFocusedCodeFile:string = vscode.window.activeTextEditor.document.uri.fsPath;
+			let currentProj:SlnElem|undefined = mpp.sfp.rootMsvsProj.FindNearestElem(currentFocusedCodeFile);
+			if(currentProj !== undefined){
+				cmd.buildCurrentMsvsProj(false, currentProj);
+			}
+		});		
+	
+	// clean 
 	vscode.commands.registerCommand(
 		'vscode-msvs-proj-manager.clean-msvs-proj', 
 		cmd.cleanMsvsProj());
