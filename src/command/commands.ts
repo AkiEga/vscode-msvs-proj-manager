@@ -94,6 +94,7 @@ export default class MsBuildCommander{
 		child.unref();
 		child.stdout.on('data', (data) => {
 			let stdoutUTF8: string = iconv.decode(data, 'Shift_JIS');
+			this.outputChannel.show(true);
 			this.outputChannel.append(stdoutUTF8);
 		});
 
